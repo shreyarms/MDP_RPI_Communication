@@ -78,7 +78,7 @@ class wifi_communication:
         return
 
     #Receive Message
-    def receive_frame(self, timeout = 2):
+    def receive_frame(self):
         frame_txt = b''
         try: 
             frame_txt = self.socket.recv(self.buffer_size)

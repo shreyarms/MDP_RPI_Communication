@@ -12,4 +12,3 @@ def take_picture():
         camera.capture(output, 'rgb')
         camera.close()
         return output
-

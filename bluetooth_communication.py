@@ -105,5 +105,3 @@ class bluetooth_communication:
             count += 1
         else:
             return msg + frame_txt.removesuffix(self.terminating_string)
-    
-
