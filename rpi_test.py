@@ -40,10 +40,9 @@ def read_wifi():
         if read_from_wifi:
             message = w_recv.receive_message()
             if message.startswith(b"C:"):
-                coordinate_array = message.split(b",")
+                coordinate_array = message.split(config.sep_str)
                 for coordinate in coordinate_array:
-                    c = coordinate.removeprefix(b"C:")
-                    to_STM.put(c)
+                    to_STM.put(coordinate)
         else:
             continue
         
@@ -90,12 +89,17 @@ def write_STM():
             try: 
                 if not to_STM.empty():
                     message = to_STM.get()
-                    if(message == b"TAKEPIC"):
+                    data_array = message.split(b'&')
+                    STM_data = data_array[0]
+                    bluetooth_data = data_array[1]
+                    STM_data = STM_data.removeprefix(b'C:')
+                    if(STM_data == b"TAKEPIC"):
                         take_picture()
                     else:
-                        if len(message) == config.STM_buffer_size:
-                            print("STM : {}".format(message))
-                            s.send_message(message)
+                        if len(STM_data) == config.STM_buffer_size:
+                            print("STM : {}".format(STM_data))
+                            s.send_message(STM_data)
+                            b_send.send_message(bluetooth_data)
             except Exception as e:
                 print("[RPi] Could Not Send to STM: {}".format(str(e)))
         else:
@@ -114,8 +118,8 @@ def take_picture():
         image = image_handling.np_array_to_bytes(picam.take_picture())
         w_send.send_message(b"image:"+image)
         classes = w_recv.receive_message()
-        
-        print(classes)
+        b_send.send_message(classes)
+        w_send.send_message(b"Algo:Next Path")
     send_to_wifi = True
     read_from_wifi = True
     send_to_android = True
