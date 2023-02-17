@@ -30,16 +30,21 @@ to_STM = queue.Queue()
 android_to_STM = queue.Queue()
 to_wifi = queue.Queue()
 
+count = 0
 
 def read_wifi():
     while True:
         r,_,_ = select.select([w_recv.socket], [], [])
         if not photo_event.is_set() and r:
+            # receiving the coordinates message from Bluetooth
             message = w_recv.receive_message()
             if message.startswith(b"C:"):
                 coordinate_array = message.split(config.sep_str)
                 for coordinate in coordinate_array:
                     to_STM.put(coordinate)
+            # once i send from android to wifi, do i need to send to wifi again for the algo?
+            # elif message.startswith(b"BC:"):
+            #     to_wifi.put(message)
         else:
             continue
         
@@ -60,11 +65,18 @@ def read_android():
         r,_,_ = select.select([b_recv.socket], [], [])
         if not photo_event.is_set() and r:
             message = b_recv.receive_message()
-            if message.startswith(b"bc:"):
+            # sending box coordinates to Wifi
+            if message.startswith(b"BC:"):
                 to_wifi.put(message)
             elif message.startswith(b"A2STM:"):
                 coordinate = message.removeprefix(b"A2STM:")
                 android_to_STM.put(coordinate)
+            # sending remote control commands to STM
+            elif message.startswith(b"RC:"):
+                controls = message
+                android_to_STM.put(controls)
+    
+
         else:
             continue
 
@@ -87,16 +99,27 @@ def write_STM():
             try: 
                 if not to_STM.empty():
                     message = to_STM.get()
-                    data_array = message.split(b'&')
-                    STM_data = data_array[0]
-                    bluetooth_data = data_array[1]
-                    STM_data = STM_data.removeprefix(b'C:')
-                    if len(STM_data) == config.STM_buffer_size:
-                        print("STM : {}".format(STM_data))
-                        s.send_message(STM_data)
-                        b_send.send_message(bluetooth_data)
-                        if(STM_data == b"END00000"):
-                            photo_event.set()
+
+                    # for remote control
+                    if message.startswith(b"RC:"):
+                        STM_data = message.removeprefix(b"RC:")
+                        if len(STM_data) == config.STM_buffer_size:
+                            print("STM : {}".format(STM_data))
+                            s.send_message(STM_data)
+                    else:
+                        data_array = message.split(b'&')
+                        STM_data = data_array[0]
+                        bluetooth_data = data_array[1]
+                        STM_data = STM_data.removeprefix(b'C:')
+                        if len(STM_data) == config.STM_buffer_size:
+                            print("STM : {}".format(STM_data))
+                            s.send_message(STM_data)
+                            b_send.send_message(bluetooth_data)
+                            if(STM_data == b"END00000" and count != n):
+                                photo_event.set()
+                                count += 1
+                                to_android.put("A:Looking for Target " + count)
+                            
             except Exception as e:
                 print("[RPi] Could Not Send to STM: {}".format(str(e)))
         else:
@@ -116,6 +139,10 @@ def take_picture():
         #b_send.send_message(classes)
         #w_send.send_message(b"Algo:Next Path")
         photo_event.clear()
+        
+        
+
+
     
 photo_event = threading.Event()
 
@@ -131,3 +158,5 @@ read_wifi_thread.start()
 #write_android_thread.start()
 write_STM_thread.start()
 take_picture_thread.start()
+
+to_android.put("A:Ready to start")
