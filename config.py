@@ -11,8 +11,8 @@ label_size = 15
 #bluetooth
 bluetooth_uuid = "996c1b5f-170b-4f38-a5e0-85eef5acf12c"
 bluetooth_host = "E4:5F:01:55:A7:10"
-bluetooth_sending_port = 2
-bluetooth_receiving_port = 3
+bluetooth_send_recv_port = 2
+# bluetooth_receiving_port = 3
 bluetooth_socket_buffer_size = 8192
 #STM32
 serial_port = '/dev/ttyUSB0'
