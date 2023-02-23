@@ -16,6 +16,7 @@ sending_address = config.socket_sending_port #8080
 receiving_address = config.socket_receiving_port #8081
 
 m = model("weights/best.pt")
+m2 = model("weights/best2.pt")
 
 w_recv = wifi_communication(config.socket_buffer_size, config.terminating_str)
 w_recv.initiate_connection(client, sending_address) #8080
@@ -42,27 +43,35 @@ w_send.initiate_connection(client, receiving_address) #8081
     # message = b"c:TAKEPICLOOP"
     # w_send.send_message(message)
     
-# while (num_of_pics_taken != num_of_boxes):
-#     message = w_recv.receive_message()
-#     if (message.startswith(b"image:")):
-#         byte_image = message.removeprefix(b"image:")
-#         np_image = image_handling.bytes_to_np_array(byte_image)
-#         result_array = m.get_results(np_image)
-#         print(result_array)
-#         image = image_handling.draw_bbox(image_handling.np_array_to_image(np_image), result_array)
-#         image.save("images/result_" + str(counter) + ".jpg")
-#         counter += 1
-#         # im = Image.open("images/result_" + str(counter) + ".jpg")
-#         #im.show()
+while (num_of_pics_taken != num_of_boxes):
+    message = w_recv.receive_message()
+    if (message.startswith(b"image:")):
+        byte_image = message.removeprefix(b"image:")
+        np_image = image_handling.bytes_to_np_array(byte_image)
+        result_array = m.get_results(np_image)
+        print(result_array)
+        image = image_handling.draw_bbox(image_handling.np_array_to_image(np_image), result_array)
+        image.save("images/result_" + str(counter) + ".jpg")
+        counter += 1
+        # im = Image.open("images/result_" + str(counter) + ".jpg")
+        #im.show()
 
-#         classes = []
-#         for result in result_array:
-#             classes.append(result[1])
-#         classes = "classes:"+ ','.join(classes)
+        classes = []
+        for result in result_array:
+            classes.append(result[1])
+        classes = "classes:"+ ','.join(classes)
 
-#         classes = bytes(classes, 'utf-8')
-#         w_send.send_message(classes)
-#         num_of_pics_taken += 1
+        classes = bytes(classes, 'utf-8')
+        w_send.send_message(classes)
+        num_of_pics_taken += 1
+
+    if (message.startswith(b"blackboximage:")):
+        byte_image = message.removeprefix(b"blackboximage:")
+        np_image = image_handling.bytes_to_np_array(byte_image)
+        result_array = m2.get_results(np_image)
+        print(result_array)
+        image = image_handling.draw_bbox(image_handling.np_array_to_image(np_image), result_array)
+        image.save("images/result_" + str(counter) + ".jpg")
 
 # imageTiling()
 w_send.disconnect()
