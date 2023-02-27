@@ -1,8 +1,5 @@
 import serial
 import time
-#from colorama import *
-
-#init(autoreset=True)
 
 class stm_communication:
     #Initialisation

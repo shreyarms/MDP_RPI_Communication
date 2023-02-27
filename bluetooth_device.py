@@ -6,8 +6,8 @@ import threading
 b = bluetooth_communication(config.bluetooth_uuid,config.bluetooth_socket_buffer_size,config.terminating_str)
 b.find_connection(config.bluetooth_host, config.bluetooth_port)
 
-remote_control = b"rc:FS000010"
-b.send_message(remote_control)
+# remote_control = b"rc:FS000010"
+# b.send_message(remote_control)
 
 # to_RPi = queue.Queue([])
 # coordinate_buffer = queue.Queue([])

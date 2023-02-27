@@ -11,8 +11,8 @@ class bluetooth_communication:
         self.bluetooth_uuid = bluetooth_uuid
         self.bluetooth_socket_buffer_size = bluetooth_socket_buffer_size
         self.terminating_string = terminating_string
-        #os.system('sudo chmod o+rw /var/run/sdp')
-        os.system("sudo hciconfig hci0 piscan")
+        # os.system('sudo chmod o+rw /var/run/sdp')
+        # os.system("sudo hciconfig hci0 piscan")
         
 
     # Connection to Android

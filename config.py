@@ -6,13 +6,14 @@ socket_receiving_port = 8081
 # image rec
 image_height = 640
 image_width = 640
+rpi_image_height = 1280
+rpi_image_width = 1280
 label_font = "arial.ttf"
 label_size = 15
 #bluetooth
 bluetooth_uuid = "996c1b5f-170b-4f38-a5e0-85eef5acf12c"
 bluetooth_host = "E4:5F:01:55:A7:10"
-bluetooth_port = 2
-# bluetooth_receiving_port = 3
+bluetooth_port = 1
 bluetooth_socket_buffer_size = 8192
 #STM32
 serial_port = '/dev/ttyUSB0'
