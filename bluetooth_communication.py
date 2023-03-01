@@ -21,11 +21,8 @@ class bluetooth_communication:
         while retry: 
             try: 
                 listening_socket = BluetoothSocket(RFCOMM)
-                print("Binding")
                 listening_socket.bind((host, port))
-                print("Listening")
                 listening_socket.listen(1)
-                print("advertising")
                 advertise_service(listening_socket, "MDP-Team27",
                 service_id = self.bluetooth_uuid,
                 service_classes = [self.bluetooth_uuid, SERIAL_PORT_CLASS],

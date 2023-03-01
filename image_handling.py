@@ -28,7 +28,6 @@ def np_array_to_bytes(np_msg):
     msg = np_msg.tobytes()
     return msg
 
-#TODO: add image tiling as a step here 
 def image_tiling(image_array):
     rows = len(image_array)
     cols = 1
@@ -45,15 +44,7 @@ def image_tiling(image_array):
         for j in range(len(image_array[i][1])):
             tiled_image.paste(im=image_array[i][1][j], box=((j+1)*config.image_width, i*config.image_height))
     
-    # tiled_image.show()
     return tiled_image
-
-# image = Image.open("images/test2image.jpg")
-
-# image_array = [["test",[image,image,image]],["test2",[image,image]]]
-
-
-# image_tiling(image_array)
 
 
 
