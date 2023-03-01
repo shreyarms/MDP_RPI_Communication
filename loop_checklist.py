@@ -140,6 +140,7 @@ def write_STM():
 
 def take_picture_loop():
     photo_event.wait()
+<<<<<<< HEAD
     classes = take_picture()
     classes = classes.removeprefix(b"classes:")
     while classes == b"Bullseye":
@@ -151,6 +152,29 @@ def take_picture_loop():
                 #s.write_to_STM(STM_data)
         classes = take_picture()
         classes = classes.removeprefix(b"classes:")
+=======
+    s.write_to_STM(b"END00000")
+    classes, image = take_picture()
+    classes_array = classes.removeprefix("classes:")
+    classes_array = classes_array.split(b',')
+    print(len(classes_array))
+    print(classes_array)
+    while len(classes_array) == 0:
+        # calls the function below when there are no classes detected
+        black_box_picture(image)
+        print("inside")
+        path = config.loop_path
+        path_array = path.split(b",")
+        for stm_data in path_array:
+            if (len(stm_data) == config.STM_buffer_size):
+                print(stm_data)
+                s.write_to_STM(stm_data)
+        classes, image = take_picture()
+        classes_array = classes.removeprefix(b"classes:")
+        classes_array = classes_array.split(b',')
+        # calls the function below when there are no classes detected
+        black_box_picture(image)
+>>>>>>> f37112975622504d4bf0d6581947aadbf0c857e0
     print(classes)
     photo_event.clear()
 
@@ -169,8 +193,11 @@ def take_picture():
         print("Receiving Messages")
         classes = w_recv.receive_message()
         print(classes)
-    return classes
-        
+    return classes, image
+
+# created a function that takes in the image taken in take_picture(), which sends a message to wifi device to run the new model on it
+def black_box_picture(image):
+    w_send.send_message(b"blackboximage:"+image)
         
 
 # read_wifi_thread = threading.Thread(target = read_wifi)

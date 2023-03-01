@@ -13,7 +13,7 @@ image_3 = Image.open("images/train_1677478067.7604969.jpg")
 image_4 = Image.open("images/train_1677478113.1776884.jpg")
 image_5 = Image.open("images/train_1677478152.7393823.jpg")
 image_6 = Image.open("images/train_1677478200.4734597.jpg")
-image_7 = Image.open("raw_result_1.jpg")
+image_7 = Image.open("images/raw_result_1.jpg")
                      
 #image_1 = Image.open("images/test2image.jpg")
 # image_2 = Image.open("images/result_6.jpg")
@@ -21,7 +21,7 @@ image_7 = Image.open("raw_result_1.jpg")
 # image_4 = Image.open("images/image3.jpg")
 # image_5 = Image.open("images/result_2.jpg")
 
-images = [image_1,image_2,image_3,image_4,image_5]
+images = [image_1,image_2,image_3,image_4,image_5, image_6, image_7]
 new_model = []
 old_model = []
 for image in images:
