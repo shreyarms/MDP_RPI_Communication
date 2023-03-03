@@ -45,6 +45,13 @@ tile_array = [new_model_array, old_model_array]
 resultant_img = image_handling.image_tiling(tile_array)
 
 resultant_img.save("images/tiled_image.jpg")
-# im1.save("images/old_images/result_old_model_5.jpg")
-# im2.save("images/old_images/result_new_model_5.jpg")
+im1.save("images/old_images/result_old_model_5.jpg")
+im2.save("images/old_images/result_new_model_5.jpg")
 
+
+
+# # image_array = [["image",[image_1]],["image",[image_2]],["image",[image_3]],["image",[image_4]],["image",[image_5]]]
+
+# # a = image_handling.image_tiling(image_array)
+
+# # a.show()

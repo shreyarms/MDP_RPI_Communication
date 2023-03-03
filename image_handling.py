@@ -36,7 +36,7 @@ def image_tiling(image_array):
         if len(image_details[1])+1 > cols:
             cols = len(image_details[1])+1
 
-    tiled_image = Image.new('RGB', (cols*config.image_width*2, math.ceil(rows*config.image_height/2)))
+    tiled_image = Image.new('RGB', (cols*config.image_width*2, math.ceil(rows/2)*config.image_height))
     label_image = ImageDraw.Draw(tiled_image)  
     font = ImageFont.truetype(config.label_font, config.label_size*3)
     

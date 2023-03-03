@@ -6,6 +6,7 @@ from Entities.grid import *
 import random
 import numpy as np
 from Entities.car import *
+from difflib import get_close_matches as gcm
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import settings
@@ -14,9 +15,47 @@ HALFPI = math.pi * 0.5
 STOPDISTANCE = 3
 
 class Dubin:
-    def __init__(self) -> None:
+    def init(self) -> None:
         pass
 
+    def read_obstacles(self):
+        count = int(input("Obstacle count: "))
+        obstacle_positions = []
+        for index in range(count):
+            print("Coordinates are 1 - indexed")
+            while True:
+                x = int(input("X Coordinate: "))
+                if 1 <= x <= 20:
+                    x -= 1
+                    break
+            while True:
+                y = int(input("Y Coordinate: "))
+                if 1 <= y <= 20:
+                    y = 20 - y
+                    break
+            while True:
+                directions = ['up', 'down', 'left', 'right']
+                z = input("Z Orientation: ")
+                direction = str("".join(gcm(z, directions, 1, 0.7)))
+                
+                if direction == directions[0]:
+                    z = settings.up
+                    break
+                elif direction == directions[1]:
+                    z = settings.down
+                    break
+                elif direction == directions[2]:
+                    z = settings.left
+                    break
+                elif direction == directions[3]:
+                    z = settings.right
+                    break
+                
+            print(f"Appended ({x}, {y}, {z}) successfully")
+            obstacle_positions.append([x,y,z])
+
+        return obstacle_positions
+    
     def random_obstacle_generator(self, obstacle_count):
         obstacle_positions = []
         direction = [settings.up, settings.down, settings.left, settings.right]
@@ -49,7 +88,6 @@ class Dubin:
             tx = target_point[0]
             ty = target_point[1]
             flag = True
-            print(x, y, tx, ty)
             
             if 0 <= tx <= 4 and 15 <= ty <= 19:
                 continue
@@ -63,7 +101,6 @@ class Dubin:
                 if flag == True:
                     obstacle_positions.append([x,y,z])
                     obstacle_count -= 1
-
         return obstacle_positions
     
     def check_obstacle(self,coordinates_list,obs_invalid_positions):
@@ -125,38 +162,36 @@ class Dubin:
             else:
                 circle2 = car.find_circle(target, turn_type_two, settings.left_turn_radius)
             
-            coordinates, time, details = path(self, circle1, circle2, car_current_pos, next_pos)
+            coordinates, distance, details = path(self, circle1, circle2, car_current_pos, next_pos)
 
-            if time == 999:
+            if distance == 999:
                 continue
-
             message = []
-            
             alpha_one = 360 - abs(math.degrees(details[0]))
             alpha_three = 360 - abs(math.degrees(details[2]))
             length = details[1] / settings.grid_size * 10
-
-            if math.ceil(alpha_one) != 360 and math.floor(alpha_one) != 0:
+            if alpha_one != 360 and alpha_one != 0:
                 message_one = Dubin.return_message(chosen_path[0], alpha_one)
                 message.append(message_one)
             message_two = Dubin.return_message(chosen_path[1], length)
             message.append(message_two)
-            if math.ceil(alpha_three) != 360 and math.floor(alpha_three) != 0:
+            if alpha_three != 360 and alpha_three != 0:
                 message_three = Dubin.return_message(chosen_path[2], alpha_three)
                 message.append(message_three)
             
-            compiled_path_details.append([coordinates, time, chosen_path, message])
-       
+            compiled_path_details.append([coordinates, distance, chosen_path, message])
+            print(distance)
         # sort path according to time
         def takeSecond(elem):
             return elem[1]
-        compiled_path_details.sort(key = takeSecond, reverse = True)
+        
+        compiled_path_details.sort(key = takeSecond, reverse = False)
 
         return compiled_path_details
     
     def return_message(path_direction, value):
         return 'c:F' + path_direction.upper() + str(int(round(value * 1000))).zfill(6)
-    
+
     def rotate_vector(self, vector, direction, radians):
         new_x = vector[0] * math.cos(radians) - vector[1] * math.sin(radians)
         new_y = vector[0] * math.sin(radians) + vector[1] * math.cos(radians)
@@ -174,6 +209,8 @@ class Dubin:
         v2 = [end_x - center_x, end_y - center_y]
 
         alpha = math.atan2(v2[1], v2[0]) - math.atan2(v1[1], v1[0])
+        # print()
+        # print(math.degrees(alpha))
         if turn_type == 'L':
             radius = settings.left_turn_radius
             if alpha < 0:
@@ -205,19 +242,22 @@ class Dubin:
         pt1 = [pt1_x,pt1_y]
         pt2 = pt1 + v1
 
+        distance = length
         startpoint = [current_pos[0], current_pos[1]]
         #calculate arc length for circle1
         arc_length, alpha_one = Dubin.calculate_arc_length(self, startpoint, pt1, p1, 'R')
-        time = Dubin.calculate_time_taken_arc(self, arc_length, 'R')
+        distance += arc_length
+        # time = Dubin.calculate_time_taken_arc(self, arc_length, 'R')
 
         endpoint = [next_pos[0], next_pos[1]]
         #calculate arc_length for circle2
         arc_length, alpha_two = Dubin.calculate_arc_length(self, pt2, endpoint, p2, 'R')
-        time += Dubin.calculate_time_taken_arc(self, arc_length, 'R')
+        distance += arc_length
+        # time += Dubin.calculate_time_taken_arc(self, arc_length, 'R')
 
-        time += length/settings.step_distance
+        # time += length/settings.step_distance
 
-        return [pt1,pt2], time, [alpha_one, length, alpha_two] #the start and end point of the line connecting the two circles
+        return [pt1,pt2], distance, [alpha_one, length, alpha_two] #the start and end point of the line connecting the two circles
     
     def LSL(self, circle1, circle2, current_pos, next_pos):
         p1 = pygame.math.Vector2(*circle1) #center coordinates
@@ -226,7 +266,6 @@ class Dubin:
         length = p2.distance_to(p1)
         v1 = p2 - p1
         v2 = Dubin.rotate_vector(self, v1, 'ACW', HALFPI) # we are using anti-clockwise rotation
-
         if length != 0:
             pt1_x = p1[0] + settings.left_turn_radius/length * v2[0]
             pt1_y = p1[1] + settings.left_turn_radius/length * v2[1]
@@ -236,20 +275,22 @@ class Dubin:
         pt1 = [pt1_x,pt1_y]
         pt2 = pt1 + v1
 
+        distance = length
         startpoint = [current_pos[0], current_pos[1]]
         #calculate arc length for circle1
         arc_length, alpha_one = Dubin.calculate_arc_length(self, startpoint, pt1, p1, 'L')
-        time = Dubin.calculate_time_taken_arc(self, arc_length, 'L')
+        distance += arc_length
+        # time = Dubin.calculate_time_taken_arc(self, arc_length, 'L')
 
         endpoint = [next_pos[0], next_pos[1]]
         #calculate arc_length for circle2
         arc_length, alpha_two = Dubin.calculate_arc_length(self, pt2, endpoint, p2, 'L')
-        time += Dubin.calculate_time_taken_arc(self, arc_length, 'L')
+        distance += arc_length
+        # time += Dubin.calculate_time_taken_arc(self, arc_length, 'L')
 
-        # time = Dubin.calculate_arc_length(self, arc_length, length)
-        time += length/settings.step_distance
+        # time += length/settings.step_distance
 
-        return [pt1,pt2], time, [alpha_one, length, alpha_two] #the start and end point of the line connecting the two circles
+        return [pt1,pt2], distance, [alpha_one, length, alpha_two] #the start and end point of the line connecting the two circles
     
     def RSL(self, circle1, circle2, current_pos, next_pos):
         p1 = pygame.math.Vector2(*circle1) #center coordinates
@@ -278,20 +319,22 @@ class Dubin:
         pt1 = [pt1x, pt1y]
         pt2 = [pt2x, pt2y]
 
+        distance = length
         #calculate arc length for circle 1
         startpoint = [current_pos[0], current_pos[1]]
         arc_length, alpha_one = Dubin.calculate_arc_length(self, startpoint, pt1, p1, 'R')
-        time = Dubin.calculate_time_taken_arc(self, arc_length, 'R')
+        distance += arc_length
+        # time = Dubin.calculate_time_taken_arc(self, arc_length, 'R')
 
         #calculate arc length for circle 2
         endpoint = [next_pos[0], next_pos[1]]
         arc_length, alpha_two = Dubin.calculate_arc_length(self, pt2, endpoint, p2, 'L')
-        time += Dubin.calculate_time_taken_arc(self, arc_length, 'L')
+        distance += arc_length
+        # time += Dubin.calculate_time_taken_arc(self, arc_length, 'L')
 
-        # time = Dubin.calculate_arc_length(self, arc_length, length)
-        time += length/settings.step_distance
+        # time += length/settings.step_distance
 
-        return [pt1, pt2], time, [alpha_one, length, alpha_two]
+        return [pt1, pt2], distance, [alpha_one, length, alpha_two]
     
     def LSR(self, circle1, circle2, current_pos, next_pos):
         p1 = pygame.math.Vector2(*circle1) #center coordinates
@@ -318,98 +361,22 @@ class Dubin:
 
         pt1 = [pt1x, pt1y]
         pt2 = [pt2x, pt2y]
-
+        distance = length
         #calculate arc length for circle 1
         startpoint = [current_pos[0], current_pos[1]]
         arc_length, alpha_one = Dubin.calculate_arc_length(self, startpoint, pt1, p1, 'L')
-        time = Dubin.calculate_time_taken_arc(self, arc_length, 'L')
+        distance += arc_length
+        # time = Dubin.calculate_time_taken_arc(self, arc_length, 'L')
 
         #calculate arc length for circle 2
         endpoint = [next_pos[0], next_pos[1]]
         arc_length, alpha_two = Dubin.calculate_arc_length(self, pt2, endpoint, p2, 'R')
-        time += Dubin.calculate_time_taken_arc(self, arc_length, 'R')
+        distance += arc_length
+        # time += Dubin.calculate_time_taken_arc(self, arc_length, 'R')
 
-        # time = Dubin.calculate_arc_length(self, arc_length, length)
-        time += length/settings.step_distance
+        # time += length/settings.step_distance
 
-        return [pt1, pt2], time, [alpha_one, length, alpha_two]
-    
-    '''
-    def RLR(self, circle1, circle2, car, current_pos):
-        p1 = pygame.math.Vector2(*circle1) #center coordinates
-        p2 = pygame.math.Vector2(*circle2) #center coordinates
-
-        d = p2.distance_to(p1)
-        
-        midpoint = [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2]
-        v1 = p2 - p1
-        v2 = Dubin.rotate_vector(self, v1, 'ACW', HALFPI) # we are using anti-clockwise
-
-        try:
-            p3_to_midpoint = math.sqrt((4 * settings.right_turn_radius ** 2) - (0.25 * d ** 2))
-        except ValueError:
-            return [999,999], 999, []
-        p3x = midpoint[0] + p3_to_midpoint / d * v2[0]
-        p3y = midpoint[1] + p3_to_midpoint / d * v2[1]
-
-        p3 = [p3x, p3y]
-
-        pt1 = [(p1[0] + p3[0]) / 2, (p1[1] + p3[1]) / 2]
-        pt2 = [(p2[0] + p3[0]) / 2, (p2[1] + p3[1]) / 2]
-
-        # calculate arc length for circle 1
-        startpoint = [current_pos[0], current_pos[1]]
-        arc_length, alpha_one = Dubin.calculate_arc_length(self, startpoint, pt1, p1, 'R')
-        time = Dubin.calculate_time_taken_arc(self, arc_length, 'R')
-
-        arc_length, alpha_two = Dubin.calculate_arc_length(self, pt1, pt2, p3,'L')
-        time += Dubin.calculate_time_taken_arc(self, arc_length, 'L')
-
-        endpoint = [car.next_pos[0], car.next_pos[1]]
-        arc_length, alpha_three = Dubin.calculate_arc_length(self, pt2, endpoint, p2, 'R')
-        time += Dubin.calculate_time_taken_arc(self, arc_length, 'R')
-
-        return [pt1, pt2], time, [alpha_one, alpha_two, alpha_three]
-    
-    def LRL(self, circle1, circle2, car, current_pos):
-        p1 = pygame.math.Vector2(*circle1) #center coordinates
-        p2 = pygame.math.Vector2(*circle2) #center coordinates
-
-        d = p2.distance_to(p1)
-
-        midpoint = [(p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2]
-        v1 = p2 - p1
-        v2 = Dubin.rotate_vector(self, v1, 'ACW', HALFPI) # we are using anti-clockwise
-
-        try:
-            p3_to_midpoint = math.sqrt((4 * settings.right_turn_radius ** 2) - (0.25 * d ** 2))
-        except ValueError:
-            return [999,999], 999, []
-
-        p3x = midpoint[0] + p3_to_midpoint / d * v2[0]
-        p3y = midpoint[1] + p3_to_midpoint / d * v2[1]
-
-        p3 = [p3x, p3y]
-
-        pt1 = [(p1[0] + p3[0]) / 2, (p1[1] + p3[1]) / 2]
-        pt2 = [(p2[0] + p3[0]) / 2, (p2[1] + p3[1]) / 2]
-
-        # calculate arc length for circle 1
-        startpoint = [current_pos[0], current_pos[1]]
-        arc_length, alpha_one = Dubin.calculate_arc_length(self, startpoint, pt1, p1, 'L')
-        time = Dubin.calculate_time_taken_arc(self, arc_length, 'L')
-
-        arc_length, alpha_two = Dubin.calculate_arc_length(self, pt1, pt2, p3, 'R')
-        time += Dubin.calculate_time_taken_arc(self, arc_length, 'R')
-
-        endpoint = [car.next_pos[0], car.next_pos[1]]
-        arc_length, alpha_three = Dubin.calculate_arc_length(self, pt2, endpoint, p2, 'L')
-        time += Dubin.calculate_time_taken_arc(self, arc_length, 'L')
-
-        return [pt1, pt2], time, [alpha_one, alpha_two, alpha_three]
-
-    '''
-    
+        return [pt1, pt2], distance, [alpha_one, length, alpha_two]  
 
     def check_path_valid(self,coordinates_list, obs_invalid_positions,grid):
         # return true only if both valid
@@ -431,5 +398,3 @@ class Dubin:
             except TypeError:
                 pass
         return True
-
-   
