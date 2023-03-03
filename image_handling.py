@@ -2,6 +2,7 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont 
 import config 
 import matplotlib.pyplot as plt
+import math
 
 def bytes_to_np_array(msg):
     np_msg = np.frombuffer(msg, dtype=np.uint8)
@@ -35,14 +36,14 @@ def image_tiling(image_array):
         if len(image_details[1])+1 > cols:
             cols = len(image_details[1])+1
 
-    tiled_image = Image.new('RGB', (cols*config.image_width, rows*config.image_height))
+    tiled_image = Image.new('RGB', (cols*config.image_width*2, math.ceil(rows*config.image_height/2)))
     label_image = ImageDraw.Draw(tiled_image)  
     font = ImageFont.truetype(config.label_font, config.label_size*3)
     
     for i in range(rows):
-        label_image.text((config.image_width/4, config.image_height*i+config.image_height/2), image_array[i][0], font=font)
+        label_image.text((config.image_width/4+(i%2*2*config.image_width), config.image_height*(i//2)+config.image_height/2), image_array[i][0], font=font)
         for j in range(len(image_array[i][1])):
-            tiled_image.paste(im=image_array[i][1][j], box=((j+1)*config.image_width, i*config.image_height))
+            tiled_image.paste(im=image_array[i][1][j], box=((j+1+i%2*2)*config.image_width, i//2*config.image_height))
     
     return tiled_image
 

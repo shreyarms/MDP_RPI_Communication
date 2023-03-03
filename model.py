@@ -14,7 +14,7 @@ class model:
         xmax_bbox = -1
         ymax_bbox = -1
         name = -1
-
+        
         for _, row in result_table.iterrows():
             if row["confidence"] >= 0.5:
                 xmin_bbox = int(row["xmin"])
@@ -23,6 +23,8 @@ class model:
                 ymax_bbox = int(row["ymax"])
                 name = row["name"]
                 confidence = row["confidence"]
-                bbox = [[xmin_bbox, ymin_bbox, xmax_bbox, ymax_bbox], name, confidence]
+                bbox = [[xmin_bbox, ymin_bbox, xmax_bbox, ymax_bbox],name,confidence]
                 result_array.append(bbox)
+        
+        result_array = sorted(result_array, key=lambda x: x[2], reverse=True)
         return result_array

@@ -136,12 +136,12 @@ class Dubin:
             alpha_three = 360 - abs(math.degrees(details[2]))
             length = details[1] / settings.grid_size * 10
 
-            if alpha_one != 360 and alpha_one != 0:
+            if math.ceil(alpha_one) != 360 and math.floor(alpha_one) != 0:
                 message_one = Dubin.return_message(chosen_path[0], alpha_one)
                 message.append(message_one)
             message_two = Dubin.return_message(chosen_path[1], length)
             message.append(message_two)
-            if alpha_three != 360 and alpha_three != 0:
+            if math.ceil(alpha_three) != 360 and math.floor(alpha_three) != 0:
                 message_three = Dubin.return_message(chosen_path[2], alpha_three)
                 message.append(message_three)
             

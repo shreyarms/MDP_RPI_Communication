@@ -9,7 +9,7 @@ from PIL import Image
 from pygame.locals import *
 from Simulator_Pygame.path_planner import path_planner 
 import Simulator_Pygame.settings as settings
-num_of_pics_to_take = 5
+num_of_pics_to_take = 6
 num_of_pics_taken = 0
 
 image_array = []
@@ -93,20 +93,24 @@ while (num_of_pics_taken < num_of_pics_to_take):
         classes = []
         for result in results_array:
             classes.append(result[1])
+
+        if len(classes) == 0:
+            classes.append(str(0))
+    
         print(classes)
-        
         classes = "classes:"+ ','.join(classes)
-        image = image_handling.draw_bbox(image_handling.np_array_to_image(np_image), results_array)
-        #image.save("images/bbox_"+str(time.time())+".jpg")
-        image.show()
+
         num_of_pics_taken += 1
-        
-        current_image = ["Image "+str(num_of_pics_taken),image]
+
+        image = image_handling.draw_bbox(image_handling.np_array_to_image(np_image), results_array)
+        image.save("images/bbox_"+str(time.time())+".jpg")
+        current_image = ["Image "+str(num_of_pics_taken),[image]]
         image_array.append(current_image)
+
         classes = bytes(classes, 'utf-8')
         w_send.send_message(classes)
         message = w_recv.receive_message()
-        print(message)
+        
         if message == (b"nextalgo"):
             time.sleep(1)
             if num_of_pics_taken < len(algo_array):
@@ -117,6 +121,9 @@ while (num_of_pics_taken < num_of_pics_to_take):
             else:
                 break
 
-image_handling.image_tiling(image_array)
+tiled_image = image_handling.image_tiling(image_array)
+tiled_image.show()
+tiled_image.save("images/tiled_images.jpg")
+
 w_send.disconnect()
 w_recv.disconnect()

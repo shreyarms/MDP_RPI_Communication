@@ -93,7 +93,13 @@ class rpi_manager():
                         STM_data = self.to_STM.get()
                         if STM_data.startswith(b"TAKEPIC")and self.num_of_pictures_taken < self.num_of_pictures_to_take:
                             print("[RPi] Entering Phototaking Event")
-                            self.coordinate = STM_data[:-3]
+                            coordinate = STM_data.removeprefix(b"TAKEPIC")
+                            coordinate = coordinate.decode("UTF-8")
+                            x,y = [int(num) for num in coordinate.split(",")]
+                            x += 1
+                            y = 20 - y
+                            coordinate_str = str(x)+","+str(y)
+                            self.coordinate = bytes(coordinate_str, "UTF-8")
                             self.photo_event.set()
                         elif len(STM_data) == config.STM_buffer_size and self.num_of_pictures_taken < self.num_of_pictures_to_take:
                             print(STM_data)
@@ -123,9 +129,11 @@ class rpi_manager():
                 self.wifi_send_socket.send_message(b"image:"+image)
                 print("Receiving Messages")
                 classes = self.wifi_recv_socket.receive_message()
-                classes += b","+self.coordinate
-                print("classes:",classes)
-                self.to_android.put(classes)
+                print(classes) #classes:15,17
+                raw_classes = classes.removeprefix(b"classes:") #15,17
+                bluetooth_coordinates = b"classes:"+self.coordinate+b","+raw_classes
+                print(bluetooth_coordinates)
+                self.to_android.put(bluetooth_coordinates)
                 self.to_wifi.put(b"nextalgo")
                 self.photo_event.clear()
         return
