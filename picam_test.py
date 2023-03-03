@@ -17,7 +17,6 @@ class rpi_manager():
         self.to_android = queue.Queue()
         self.to_STM = queue.Queue()
         self.to_wifi = queue.Queue()
-        self.coordinate = None
         self.bluetooth_socket = bluetooth_communication(config.bluetooth_uuid,config.bluetooth_socket_buffer_size,config.terminating_str)
         self.wifi_recv_socket = wifi_communication(config.socket_buffer_size,config.terminating_str)
         self.wifi_send_socket = wifi_communication(config.socket_buffer_size,config.terminating_str)
@@ -29,7 +28,10 @@ class rpi_manager():
         self.wifi_recv_socket.accept_connection(config.socket_rpi_ip, config.socket_receiving_port) #8081
         self.stm_socket.connect_STM()
 
+        print("[RPi] Successfully Connected!")
+
         while True: 
+            print("im here!")
             message = self.bluetooth_socket.receive_message()
             print(message)
             if message.startswith(b"OBS_"):
@@ -93,16 +95,15 @@ class rpi_manager():
                         STM_data = self.to_STM.get()
                         if STM_data.startswith(b"TAKEPIC")and self.num_of_pictures_taken < self.num_of_pictures_to_take:
                             print("[RPi] Entering Phototaking Event")
-                            self.coordinate = STM_data[:-3]
                             self.photo_event.set()
                         elif len(STM_data) == config.STM_buffer_size and self.num_of_pictures_taken < self.num_of_pictures_to_take:
-                            print(STM_data)
-                            self.stm_socket.write_to_STM(STM_data)
+                            #self.stm_socket.write_to_STM(STM_data)
+                            print("[RPi] Sending to STM")
                             if(STM_data == b"END00000" and self.num_of_pictures_taken == self.num_of_pictures_to_take):
                                 self.to_android.put("STOP")
                                 self.to_wifi.put("STOP")
-                                self.bluetooth_socket.disconnect()
-                                self.stm_socket.disconnect_STM()
+                                #self.bluetooth_socket.disconnect()
+                                #self.stm_socket.disconnect_STM()
                                 self.wifi_recv_socket.disconnect()
                                 self.wifi_send_socket.disconnect()              
                 except Exception as e:
@@ -114,18 +115,18 @@ class rpi_manager():
         while True:
             self.photo_event.wait()
             print("[RPi] Inside Event")
-            STM_msg = self.stm_socket.read_from_STM()
+            STM_msg = b"STOP0000"
             if STM_msg == b"STOP0000":
                 print("[RPi] STM Stopped")
                 self.num_of_pictures_taken += 1
-                #image = image_handling.np_array_to_bytes(image_handling.image_to_np_array(Image.open("images/test.jpg")))
-                image = image_handling.np_array_to_bytes(picam.take_picture())
+                image = image_handling.np_array_to_bytes(image_handling.image_to_np_array(Image.open("image.jpg")))
+                #image = image_handling.np_array_to_bytes(picam.take_picture())
+                print(len(image))
                 self.wifi_send_socket.send_message(b"image:"+image)
                 print("Receiving Messages")
                 classes = self.wifi_recv_socket.receive_message()
-                classes += b","+self.coordinate
                 print("classes:",classes)
-                self.to_android.put(classes)
+                #self.to_android.put(classes)
                 self.to_wifi.put(b"nextalgo")
                 self.photo_event.clear()
         return

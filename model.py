@@ -16,12 +16,13 @@ class model:
         name = -1
 
         for _, row in result_table.iterrows():
-            xmin_bbox = int(row["xmin"])
-            ymin_bbox = int(row["ymin"])
-            xmax_bbox = int(row["xmax"])
-            ymax_bbox = int(row["ymax"])
-            name = row["name"]
-            confidence = row["confidence"]
-            bbox = [[xmin_bbox, ymin_bbox, xmax_bbox, ymax_bbox], name, confidence]
-            result_array.append(bbox)
+            if row["confidence"] >= 0.5:
+                xmin_bbox = int(row["xmin"])
+                ymin_bbox = int(row["ymin"])
+                xmax_bbox = int(row["xmax"])
+                ymax_bbox = int(row["ymax"])
+                name = row["name"]
+                confidence = row["confidence"]
+                bbox = [[xmin_bbox, ymin_bbox, xmax_bbox, ymax_bbox], name, confidence]
+                result_array.append(bbox)
         return result_array
