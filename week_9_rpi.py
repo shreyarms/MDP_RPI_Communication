@@ -13,6 +13,7 @@ class rpi_manager():
     def __init__(self, num_of_pictures_to_take):
         self.num_of_pictures_to_take = num_of_pictures_to_take
         self.num_of_pictures_taken = 0
+        self.turn_number = 1
         self.photo_event = threading.Event()
         self.to_android = queue.Queue()
         self.to_STM = queue.Queue()
@@ -31,6 +32,7 @@ class rpi_manager():
         while True: 
             message = self.bluetooth_socket.receive_message()
             if message.startswith(b"BANANAS"):
+                self.wifi_send_socket.send_message(message)
                 print("[RPi] BANANAS")
                 break
         return
@@ -41,12 +43,9 @@ class rpi_manager():
             receiving,_,_ = select.select([self.wifi_recv_socket.socket], [], [])
             if not self.photo_event.is_set() and receiving:
                 message = self.wifi_recv_socket.receive_message()
-                # to get instructions from algorithm
-                if message.startswith(b"c:"):
-                    instructions = message.split(b'c:')
-                    for instruction in instructions:
-                        instruction = instruction.removeprefix(b"c:")
-                        self.to_STM.put(instruction)   
+                if message.startswith(b"BANANAS0"):
+                    # message to tell stm tp move forward using ultrasound sensor till 30cm away from box, then stops and sends take pic
+                    self.to_STM.put(message)   
             else:
                 continue
     
@@ -62,18 +61,18 @@ class rpi_manager():
             else:
                 continue
             
-    def write_android(self):
-        while True:
-            if not self.photo_event.is_set():
-                try: 
-                    if not self.to_android.empty():
-                        message = self.to_android.get()
-                        print("Bluetooth:{}".format(message))
-                        self.bluetooth_socket.send_message(message)
-                except Exception as e:
-                    print("[RPi] Could Not Send to Android: {}".format(str(e)))
-            else:
-                continue
+    # def write_android(self):
+    #     while True:
+    #         if not self.photo_event.is_set():
+    #             try: 
+    #                 if not self.to_android.empty():
+    #                     message = self.to_android.get()
+    #                     print("Bluetooth:{}".format(message))
+    #                     self.bluetooth_socket.send_message(message)
+    #             except Exception as e:
+    #                 print("[RPi] Could Not Send to Android: {}".format(str(e)))
+    #         else:
+    #             continue
 
     def write_STM(self):
         while True:
@@ -84,6 +83,7 @@ class rpi_manager():
                         if STM_data.startswith(b"TAKEPIC")and self.num_of_pictures_taken < self.num_of_pictures_to_take:
                             print("[RPi] Entering Phototaking Event")
                             self.photo_event.set()
+                        
                         elif len(STM_data) == config.STM_buffer_size and self.num_of_pictures_taken < self.num_of_pictures_to_take:
                             print(STM_data)
                             self.stm_socket.write_to_STM(STM_data)
@@ -114,27 +114,30 @@ class rpi_manager():
                 classes = self.wifi_recv_socket.receive_message()
                 print(classes) #classes:15,17
                 raw_classes = classes.removeprefix(b"classes:") #15,17
-                bluetooth_coordinates = b"classes:"+self.coordinate+b","+raw_classes
-                print(bluetooth_coordinates)
-                self.to_android.put(bluetooth_coordinates)
-                self.to_wifi.put(b"nextalgo")
+                # if turn_number = 1, first turn. turn_number 2 is the second turn + going back to car park
+                # after first turn, stm needs to move forward using ultrasound sensor till 30cm away from box, then stops and sends take pic
+                if raw_classes[0] == "38":
+                    self.to_STM.put(b"right" + self.turn_number)
+                elif raw_classes[0] == "39":
+                    self.to_STM.put(b"leftturn" + self.turn_number)
+                self.turn_number += 1
                 self.photo_event.clear()
         return
 
 
 
-r = rpi_manager(5)
+r = rpi_manager(2)
 r.prestart()
 read_wifi_thread = threading.Thread(target = r.read_wifi)
 #android_communication_thread = threading.Thread(target = android_communication)
 write_wifi_thread = threading.Thread(target = r.write_wifi)
-read_android_thread  = threading.Thread(target= r.write_android)
+# read_android_thread  = threading.Thread(target= r.write_android)
 write_STM_thread= threading.Thread(target= r.write_STM)
 take_picture_thread = threading.Thread(target = r.take_picture)
 
 read_wifi_thread.start()
 #android_communication_thread.start()
 write_wifi_thread.start()
-read_android_thread.start()
+# read_android_thread.start()
 write_STM_thread.start()
 take_picture_thread.start()

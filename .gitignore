@@ -1,3 +1,7 @@
 __pycache__/
+<<<<<<< HEAD
+images/
+=======
 yolov7/
+>>>>>>> parent of 1504500 (added stuff for rpi)
 weights/
