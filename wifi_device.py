@@ -1,20 +1,30 @@
-import pygame
-from wifi_communication import wifi_communication
 from model import model 
 import image_handling
+from PIL import Image
+
+m = model("weights/epoch_148.pt")
+
+import pygame
+from wifi_communication import wifi_communication
 import config
 import socket 
 import time
-from PIL import Image
 from pygame.locals import *
 from Simulator_Pygame.path_planner import path_planner 
 import Simulator_Pygame.settings as settings
+
+
+print("Testing remove suffix and prefix:")
+url = 'abcdc.com'
+print(url.removesuffix('.com'))   # Returns 'abcdc'
+print(url.removeprefix('abcdc.'))  # Returns 'com'
+
+
 num_of_pics_to_take = 6
 num_of_pics_taken = 0
 
 image_array = []
 
-m = model("weights/epoch_148.pt")
 
 pygame.init()
 FPS = 60

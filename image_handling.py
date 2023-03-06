@@ -39,7 +39,8 @@ def image_tiling(image_array):
     tiled_image = Image.new('RGB', (cols*config.image_width*2, math.ceil(rows/2)*config.image_height))
     label_image = ImageDraw.Draw(tiled_image)  
     font = ImageFont.truetype(config.label_font, config.label_size*3)
-    
+    # font = ImageFont.load_default()
+
     for i in range(rows):
         label_image.text((config.image_width/4+(i%2*2*config.image_width), config.image_height*(i//2)+config.image_height/2), image_array[i][0], font=font)
         for j in range(len(image_array[i][1])):

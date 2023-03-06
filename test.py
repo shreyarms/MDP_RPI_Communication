@@ -7,7 +7,7 @@ import numpy as np
 
 m1 = model("weights/epoch_148.pt")
 
-m2 = model("weights/epoch_152.pt")
+# m2 = model("weights/epoch_152.pt")
 
 image_1 = Image.open("images/old_images/train_1677477845.7311687.jpg")
 image_2 = Image.open("images/old_images/train_1677477958.3576334.jpg")
@@ -29,13 +29,13 @@ old_model = []
 for image in images:
     np_image = image_handling.image_to_np_array(image)
     result_array_m1 = m1.get_results(np_image)
-    result_array_m2 = m2.get_results(np_image)
+    # result_array_m2 = m2.get_results(np_image)
     print("Old Model results")
     print(result_array_m1)
     im1 = image_handling.draw_bbox(image_handling.np_array_to_image(np_image), result_array_m1)
-    im2 = image_handling.draw_bbox(image_handling.np_array_to_image(np_image), result_array_m2)
+    # im2 = image_handling.draw_bbox(image_handling.np_array_to_image(np_image), result_array_m2)
     old_model.append(im1)
-    new_model.append(im2)
+    # new_model.append(im2)
 
 new_model_array = ["new_model", new_model]
 old_model_array = ["old_model", old_model]
@@ -46,7 +46,7 @@ resultant_img = image_handling.image_tiling(tile_array)
 
 resultant_img.save("images/tiled_image.jpg")
 im1.save("images/old_images/result_old_model_5.jpg")
-im2.save("images/old_images/result_new_model_5.jpg")
+# im2.save("images/old_images/result_new_model_5.jpg")
 
 
 
