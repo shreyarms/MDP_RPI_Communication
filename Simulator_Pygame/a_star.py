@@ -20,7 +20,7 @@ class astar:
         straight_cost = 1 * settings.grid_size
         # turning_radius = 2 * settings.grid_size # rounded up both left and right turning radius
         turning_radius = settings.a_star_turning_radius # rounded up both left and right turning radius
-        turning_cost = 3 * settings.grid_size
+        turning_cost = 999 * settings.grid_size
         # assume car always makes a 90 degree turn to next neighbour(might require left and right turning radius to be same)
         # same assumption for reverse
         # car always move straight by 1 grid
@@ -35,7 +35,6 @@ class astar:
 
         #if movement is valid, add it to the possible neighbours it can visit
         for movement_destination in straight_movement:
-            # print("move_des= ", movement_destination)
             movement_type = movement_destination[3]
             temp_movement_destination = [movement_destination[0],movement_destination[1],movement_destination[2]]
             if(self.algo.check_path_valid([temp_movement_destination],self.invalid_position,self.grid_coordinates)):
@@ -103,7 +102,7 @@ class astar:
         return (dy+dx)  
 
     def start_astar(self, current_pos, target_pos):
-        print("Entering a star")
+        print("Starting A* Search", end = '')
         #start and target is in (x,y,direction) format
         # setup
         frontier_nodes = PriorityQueue() # stores all of the frontier node
@@ -123,8 +122,9 @@ class astar:
             #frontier format = total_cost, path_cost, counter, current_position
             # if total cost is tied, tie breaking is first determined by highest path cost, then counter if path cost also ties
             total_cost, _, _, current = frontier_nodes.get() # "_" is a dont care variable that will not be used
+            print(".", end = '')
             if (abs(current[0]-target[0])<= 0.5*settings.grid_size and abs(current[1]-target[1])<= 0.5*settings.grid_size and current[2]==target[2]):
-                print("a star target found!")
+                print("A* Path Found!")
                 if(backtrack[current][1]== "straight" or backtrack[current][1]== "reverse"): #For reaching target when compressing straight and reverse
                     movement_list.append([current, backtrack[current][1], None])
                 #backtrack till root node
@@ -146,13 +146,14 @@ class astar:
 
                 if new_pos not in backtrack or new_cost < cost[new_pos]:
                     counter += 1 #for tie breaking
-                    total_cost = new_cost + self.manhattan(new_pos,target)
+                    # total_cost = new_cost + self.manhattan(new_pos,target)
+                    total_cost = new_cost + 0
                     frontier_nodes.put((total_cost, new_cost, counter, new_pos))
                     backtrack[new_pos] = (current, movement_type, center)
                     cost[new_pos] = new_cost
 
         #if reach here no path is found
-        print("no path found a*")
+        print("A* Path Not Found")
         print()
         return None
                 
@@ -272,12 +273,10 @@ class astar:
         return tuple(temp_start)
 
     def a_star_path_compressor(self,path):
-        """Compress the path, ie 3 straight command into 1 big straight command"""
+        """Compress the path, ie 3 straight command into 1 big straight command and make straight/reverse command to be destination rather than its current point"""
         path_list = list(map(list, path)) #idk why this works
-        path_list = self.adjust_to_irl_turning_radius(path_list)
         length = len(path_list)
         i = 0
-        # print("legnth= ",length)
         # path_list = list(map(list, path)) #idk why this works
         while(i<length):
             if(path_list[i][1]=='straight' or path_list[i][1]== 'reverse'):
@@ -294,16 +293,43 @@ class astar:
             i += 1
         return path_list
     
+    def a_star_dubins(self,path_list,path_taken,algorithm,dubin,car,invalid_positions,grid_coordinates):
+            """Check at every point of a* whether it can be cutshort by dubins"""
+            print("astar dubin")
+            next_pos = path_taken
+            a_star_path = []
+            destinations= []
+            message_list = []
+            print()
+            for counter in range(len(path_list)-1):
+                point = path_list[counter]
+                car_current_pos = point[0]
+                compiled_path_lists = algorithm.Dubin.get_shortest_path(dubin, car, path_taken, car_current_pos, next_pos)
+                for path in compiled_path_lists:
+                    # obtain list of coordinates travelled for 1 specific path type e.g. RSR
+                    print(".........", end = '')
+                    coordinates_list = car.move_car_dubin(path[0][0], path[0][1], next_pos, path[2],car_current_pos)
+                    if(dubin.check_path_valid(coordinates_list, invalid_positions, grid_coordinates)):
+                        destinations.extend(coordinates_list)
+                        message_list.extend(path[3])
+                        print("a_star dubin Path found!")
+                        a_star_path.append(point)
+                        return destinations, message_list, a_star_path
+                a_star_path.append(point)
+            print("No a_star_dubin")
+            return None, None, None
     
     def adjust_to_irl_turning_radius(self, path_list):
+        """Adds in extra movement to adjust for shorter turning radius"""
         left_turning_radius_diff = settings.a_star_turning_radius - settings.left_turn_radius
         right_turning_radius_diff = settings.a_star_turning_radius - settings.right_turn_radius
-        counter = 0
+        temp_list = []
         #if the last movement is a turn, a straight or reverse need to be added to reach the target turning point
         last = len(path_list)-1
         if(path_list[last][1]=='left' or path_list[last][1]=='right'):
             target = self.move_turn(path_list[last][0],settings.a_star_turning_radius,path_list[last][1],False)
             target_coor = [target[0],target[1],target[2]]
+            # path_list.append([target_coor, 'straight', None])
             path_list.append([target_coor, 'straight', None])
 
         elif(path_list[last][1]=='reverse left' or path_list[last][1]=='reverse right'):
@@ -311,8 +337,12 @@ class astar:
             target_coor = [target[0],target[1],target[2]]
             path_list.append([target_coor, 'reverse', None])
 
-        for path, next_path in zip(path_list,path_list[1:]):
-            path[0] = list(path[0])
+        # if movement is a turn, change the starting point and center of the turn to compensate for the reduced turning radius
+        # adjusted turning start and end point is still align to the same axis as the original therefore no straight path is added if the next path is a straight or reverse movement
+        # for path, next_path in zip(path_list,path_list[1:]):
+        for counter in range(len(path_list)):
+            path = list(path_list[counter])
+            path[0] = list(path[0])   
             if(path[2]!=None):
                 path[2] = list(path[2])
 
@@ -354,11 +384,13 @@ class astar:
                         path[2][0] -= offset
                     else:
                         path[2][0] += offset
-
+                temp_list.append(path)
                 try:
+                    next_path = path_list[counter+1]
                     if(next_path[1]== 'left' or next_path[1]== 'right'):
-                        #insert a straight movement infront of path
-                        path_list.insert(counter+1,[next_path[0], 'straight', None])
+                        #insert a straight movement infront of path to make sure the car can go to the next turning point
+                        # temp_list.insert(counter+1,[next_path[0], 'straight', None])
+                        temp_list.append([next_path[0], 'straight', None])
                 except IndexError:
                     pass
 
@@ -394,22 +426,33 @@ class astar:
                         path[2][0] -= offset
                     else:
                         path[2][0] += offset
+
+                temp_list.append(path)
                 try:
+                    next_path = path_list[counter+1]
                     if(next_path[1]== 'reverse left' or next_path[1]== 'reverse right'):
                         #insert a straight movement infront of path
-                        path_list.insert(counter+1,[next_path[0], 'reverse', None])
+                        # temp_list.insert(counter+1,[next_path[0], 'reverse', None])
+                        temp_list.append([next_path[0], 'reverse', None])
                 except IndexError:
                     pass
-            counter +=1
+            else:
+                temp_list.append(path)
+            
+            # counter +=1
+        
         #if the first movement is a turn, a straight or reverse need to be added to reach the offset turning point
         if(path_list[0][1]=='left' or path_list[0][1]=='right'):
-            path_list.insert(0,[path_list[0][0], 'straight', None])
+            # path_list.insert(0,[path_list[0][0], 'straight', None])
+            temp_list.insert(0,[temp_list[0][0], 'straight', None])
         elif(path_list[0][1]=='reverse left' or path_list[0][1]=='reverse right'):
-            path_list.insert(0,[path_list[0][0], 'reverse', None])
-        return path_list
+            # path_list.insert(0,[path_list[0][0], 'reverse', None])
+            temp_list.insert(0,[temp_list[0][0], 'reverse', None])
+        return temp_list
 
 
     def coordinates_list_to_message(self,current,path_list):
+        """Convert an a* path to message format"""
         temp_current= current.copy()
         message_list=[]
         turning_radius = 2 * settings.grid_size

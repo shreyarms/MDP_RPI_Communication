@@ -6,8 +6,6 @@ import math
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import settings
 
-REVERSE_DISTANCE = 2* settings.grid_size
-
 class Car:
     def __init__(self, car_starting_pos) -> None:
         self.image = pygame.image.load(os.path.join('Simulator_Pygame','Entities','Assets','Robot.png')).convert_alpha()
@@ -55,7 +53,6 @@ class Car:
             elif(point[1]=='right'):
                 next_point = self.move_car_curve(-90,current_pos,point[2],"right".lower())
                 destinations.extend(next_point)
-
             #do reverse left/right idk how, maybe merge with
             elif(point[1]=='reverse left'):
                 next_point = self.move_car_curve(-90,current_pos,point[2],"right".lower())
@@ -63,10 +60,10 @@ class Car:
             elif(point[1]=='reverse right'):
                 next_point = self.move_car_curve(90,current_pos,point[2],"left".lower())
                 destinations.extend(next_point)
-            #uncomment this after implementing the rest of the ifs
-            while(type(destinations[-1])== str):
-                destinations.pop(-1)
-            current_pos = destinations[-1].copy()
+            if(destinations[-1]!=None):
+                while(destinations and type(destinations[-1])== str):
+                    destinations.pop(-1)
+                current_pos = destinations[-1].copy()
 
         return destinations
 
@@ -204,14 +201,15 @@ class Car:
         V2 = [end[x]-center[x],end[y]-center[y]]
 
         alpha = math.atan2(V2[y],V2[x]) - math.atan2(V1[y],V1[x])
+        # alpha = math.atan2(abs(V2[x] - V1[x]), abs(V2[y] - V1[y]))
 
-        if(alpha<0 and direction=="right"):
-            alpha += 2*math.pi
-        elif(alpha>0 and direction=="left"):
-            alpha -= 2*math.pi   
-        alpha = -alpha
+        if(alpha < 0 and direction == "right"):
+            alpha += 2 * math.pi
+        elif(alpha > 0 and direction == "left"):
+            alpha -= 2 * math.pi   
+        alpha *= -1
 
-        return (alpha * 180/math.pi)
+        return math.degrees(alpha)
 
     def find_circle(self,point,turn,radius):
         #target should be (x,y,direction)
@@ -257,18 +255,18 @@ class Car:
             alpha -= 360
         return alpha
 
-    def reverse(self,current):
+    def reverse(self,current,reverse_distance):
         """Generate coordinates for reversing"""
         target = current.copy()
         if(current[2]==settings.up):
-            target[1] += REVERSE_DISTANCE
+            target[1] += reverse_distance
         elif(current[2]==settings.right):
-            target[0] -= REVERSE_DISTANCE
-        elif(current[2]==270):
-            target[1] -= REVERSE_DISTANCE 
+            target[0] -= reverse_distance
+        elif(current[2]==270 or current[2]== settings.down):
+            target[1] -= reverse_distance 
         elif(current[2]==settings.left):
-            target[0] += REVERSE_DISTANCE
-        destination = self.move_car_straight([self.current_pos[0],self.current_pos[1]],[target[0],target[1]])
+            target[0] += reverse_distance
+        destination = self.move_car_straight([current[0],current[1]],[target[0],target[1]])
         return destination, target
 
     def draw_car_reverse(self, surface, target_pos):

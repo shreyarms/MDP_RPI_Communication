@@ -9,6 +9,8 @@ from PIL import Image
 from pygame.locals import *
 from Simulator_Pygame.path_planner import path_planner 
 import Simulator_Pygame.settings as settings
+
+# Set number of pictures to take
 num_of_pics_to_take = 6
 num_of_pics_taken = 0
 
@@ -36,14 +38,13 @@ w_send.initiate_connection(client, receiving_address) #8081
 
 while True:
     message = w_recv.receive_message()
-    print(message)
     if message.startswith(b"OBS_"):
-        bbox_input = message
-        bbox_str_array = bbox_input.split(b"OBS_")[1:]
-        bbox_algo_input = []
-        print(bbox_str_array)
-        for bbox_str in bbox_str_array:
-            input = bbox_str.split(b",")
+        print("[Wifi] Received Obstacles")
+        obs_input = message
+        obs_str_array = obs_input.split(b"OBS_")[1:]
+        obs_algo_input = []
+        for obs_str in obs_str_array:
+            input = obs_str.split(b",")
             print(input)
             x = int(input[1]) - 1
             y = 20 - int(input[2])
@@ -56,17 +57,15 @@ while True:
                 angle = -90
             elif input[3] == b'3':
                 angle = 180
-            bbox_algo_input.append([x,y,angle])
+            obs_algo_input.append([x,y,angle])
         break 
 
-print(bbox_algo_input)
+print("[Wifi] Obstacle Input:{}".format(obs_algo_input))
 
-algo = path_planner(bbox_algo_input)
-
+algo = path_planner(obs_algo_input)
 algo_output_array = algo.final_message_list
 pygame.quit()
 
-print(algo_output_array)
 algo_array = []
 start_index = 0
 for algo_output_index in range(0,len(algo_output_array)):
@@ -74,20 +73,22 @@ for algo_output_index in range(0,len(algo_output_array)):
         algo_array.append(algo_output_array[start_index:algo_output_index]+[algo_output_array[algo_output_index]])
         start_index = algo_output_index+1
 
-print(algo_array)
+print("[Wifi] Algo Output: {}".format(algo_array))
 algo_output_string = bytes(''.join(algo_array[num_of_pics_taken]), "UTF-8")
-#algo_output_string = bytes(''.join(["c:FL180000c:END00000c:TAKEPIC1,2"]), "UTF-8")
+
+#for custom input 
+#custom_input = ["c:FL180000","c:END00000","c:TAKEPIC1,2"]"
+#algo_output_string = bytes(''.join(custom_input), "UTF-8")
 w_send.send_message(algo_output_string)
 
 while (num_of_pics_taken < num_of_pics_to_take):
     message = w_recv.receive_message()
-    print(len(message))
     if (message.startswith(b"image:")):
+        print("[Wifi] Recived Image")
         byte_image = message.removeprefix(b"image:")
         np_image = image_handling.bytes_to_np_array(byte_image)
         image = image_handling.np_array_to_image(np_image)
-        print(len(np_image))
-        
+
         results_array = m.get_results(np_image)
 
         classes = []
@@ -97,26 +98,27 @@ while (num_of_pics_taken < num_of_pics_to_take):
         if len(classes) == 0:
             classes.append(str(0))
     
-        print(classes)
         classes = "classes:"+ ','.join(classes)
+        print("[Wifi] {}".format(classes))
+        classes = bytes(classes, 'utf-8')
+        print("[Wifi] Sending Classes")
+        w_send.send_message(classes)
 
         num_of_pics_taken += 1
 
         image = image_handling.draw_bbox(image_handling.np_array_to_image(np_image), results_array)
-        image.save("images/bbox_"+str(time.time())+".jpg")
+        #image.save("images/bbox_"+str(time.time())+".jpg")
         current_image = ["Image "+str(num_of_pics_taken),[image]]
         image_array.append(current_image)
-
-        classes = bytes(classes, 'utf-8')
-        w_send.send_message(classes)
-        message = w_recv.receive_message()
         
+        message = w_recv.receive_message()
         if message == (b"nextalgo"):
-            time.sleep(1)
+            print("[Wifi] Sending Next Path")
+            # time.sleep(1)
             if num_of_pics_taken < len(algo_array):
-                print(algo_array[num_of_pics_taken])
                 algo_output_string = bytes(''.join(algo_array[num_of_pics_taken]), "UTF-8")
-                # algo_output_string = bytes(''.join(["c:FS100000c:END00000c:TAKEPIC1,2"]), "UTF-8")
+                #custom_input = ["c:FL180000","c:END00000","c:TAKEPIC1,2"]"
+                #algo_output_string = bytes(''.join(custom_input), "UTF-8")
                 w_send.send_message(algo_output_string)
             else:
                 break
