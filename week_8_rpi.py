@@ -145,6 +145,7 @@ class rpi_manager():
                         print("[RPi] No Classes Detected")
                         if current_adjustments < self.adjustments:
                             print("[RPi] Trying Out Different Scanning Angle")
+                            current_adjustments += 1
                             self.stm_socket.write_to_STM(b"FALSE000")
                             self.stm_socket.write_to_STM(b"END00000")
                         else:
