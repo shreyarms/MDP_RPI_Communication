@@ -17,7 +17,8 @@ def draw_bbox(image,result_array):
     bb_image = ImageDraw.Draw(image)  
     for result in result_array:
         bb_image.rectangle(result[0], outline ="red")
-        font = ImageFont.truetype(config.label_font, config.label_size)
+        font = ImageFont.load_default()
+        # font = ImageFont.truetype(config.label_font, config.label_size)
         bb_image.text(result[0],result[1]+"\n"+str(round(result[2],2)), font=font)
     return image
 
@@ -38,7 +39,8 @@ def image_tiling(image_array):
 
     tiled_image = Image.new('RGB', (cols*config.image_width*2, math.ceil(rows/2)*config.image_height))
     label_image = ImageDraw.Draw(tiled_image)  
-    font = ImageFont.truetype(config.label_font, config.label_size*3)
+    font = ImageFont.load_default()
+    # font = ImageFont.truetype(config.label_font, config.label_size*3)
     
     for i in range(rows):
         label_image.text((config.image_width/4+(i%2*2*config.image_width), config.image_height*(i//2)+config.image_height/2), image_array[i][0], font=font)

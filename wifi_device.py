@@ -1,11 +1,16 @@
-import pygame
-from wifi_communication import wifi_communication
 from model import model 
 import image_handling
+from PIL import Image
+
+m = model("weights/epoch_148.pt")
+
+import pygame
+from wifi_communication import wifi_communication
+
 import config
 import socket 
 import time
-from PIL import Image
+
 from pygame.locals import *
 from Simulator_Pygame.path_planner import path_planner 
 import Simulator_Pygame.settings as settings
@@ -16,7 +21,7 @@ num_of_pics_taken = 0
 
 image_array = []
 
-m = model("weights/epoch_148.pt")
+
 
 pygame.init()
 FPS = 60
@@ -126,6 +131,6 @@ while (num_of_pics_taken < num_of_pics_to_take):
 tiled_image = image_handling.image_tiling(image_array)
 tiled_image.show()
 tiled_image.save("images/tiled_images.jpg")
-w_send("c:END00000")
+# w_send("c:END00000")
 w_send.disconnect()
 w_recv.disconnect()

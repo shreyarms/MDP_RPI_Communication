@@ -134,20 +134,20 @@ class path_planner:
         while True:
     # find first path
         # DUBINS path planning -----------------------------------------------------------------------------------
-            print()
-            print("Finding Dubin Path")
-            next_pos = path_taken
-            compiled_path_lists = algorithm.Dubin.get_shortest_path(dubin, car, path_taken, car_current_pos, next_pos)
-            for path in compiled_path_lists:
-                # obtain list of coordinates travelled for 1 specific path type e.g. RSR
-                print(".........", end = '')
-                coordinates_list = car.move_car_dubin(path[0][0], path[0][1], next_pos, path[2],car_current_pos)
-                if(dubin.check_path_valid(coordinates_list, invalid_positions, grid_coordinates)):
-                    destinations.extend(coordinates_list)
-                    show_path.extend(destinations)
-                    message_list.extend(path[3])
-                    print("Dubin Path found!")
-                    break
+            # print()
+            # print("Finding Dubin Path")
+            # next_pos = path_taken
+            # compiled_path_lists = algorithm.Dubin.get_shortest_path(dubin, car, path_taken, car_current_pos, next_pos)
+            # for path in compiled_path_lists:
+            #     # obtain list of coordinates travelled for 1 specific path type e.g. RSR
+            #     print(".........", end = '')
+            #     coordinates_list = car.move_car_dubin(path[0][0], path[0][1], next_pos, path[2],car_current_pos)
+            #     if(dubin.check_path_valid(coordinates_list, invalid_positions, grid_coordinates)):
+            #         destinations.extend(coordinates_list)
+            #         show_path.extend(destinations)
+            #         message_list.extend(path[3])
+            #         print("Dubin Path found!")
+            #         break
             
             # END OF DUBIN --------------------------------------------------------------------------------------------
             # if dubin no find then astar
