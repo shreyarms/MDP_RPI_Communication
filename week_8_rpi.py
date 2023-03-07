@@ -121,11 +121,11 @@ class rpi_manager():
         while True:
             self.photo_event.wait()
             print("[RPi] Inside Event")
-            STM_msg = self.stm_socket.read_from_STM()
             no_class_detected = True
             current_adjustments = 0
             self.num_of_pictures_taken += 1
             while no_class_detected:
+                STM_msg = self.stm_socket.read_from_STM()
                 if STM_msg == b"STOP0000":
                     print("[RPi] STM Stopped")
                     #image = image_handling.np_array_to_bytes(image_handling.image_to_np_array(Image.open("images/test.jpg")))
