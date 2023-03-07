@@ -18,6 +18,7 @@ class rpi_manager():
         self.to_STM = queue.Queue()
         self.to_wifi = queue.Queue()
         self.coordinate = None
+        self.adjustments = 2
         self.bluetooth_socket = bluetooth_communication(config.bluetooth_uuid,config.bluetooth_socket_buffer_size,config.terminating_str)
         self.wifi_recv_socket = wifi_communication(config.socket_buffer_size,config.terminating_str)
         self.wifi_send_socket = wifi_communication(config.socket_buffer_size,config.terminating_str)
@@ -121,21 +122,39 @@ class rpi_manager():
             self.photo_event.wait()
             print("[RPi] Inside Event")
             STM_msg = self.stm_socket.read_from_STM()
-            if STM_msg == b"STOP0000":
-                print("[RPi] STM Stopped")
-                self.num_of_pictures_taken += 1
-                #image = image_handling.np_array_to_bytes(image_handling.image_to_np_array(Image.open("images/test.jpg")))
-                image = image_handling.np_array_to_bytes(picam.take_picture())
-                self.wifi_send_socket.send_message(b"image:"+image)
-                print("Receiving Messages")
-                classes = self.wifi_recv_socket.receive_message()
-                print(classes) 
-                raw_classes = classes.removeprefix(b"classes:") 
-                bluetooth_coordinates = b"classes:"+self.coordinate+b","+raw_classes
-                print(bluetooth_coordinates)
-                self.to_android.put(bluetooth_coordinates)
-                self.to_wifi.put(b"nextalgo")
-                self.photo_event.clear()
+            no_class_detected = True
+            current_adjustments = 0
+            self.num_of_pictures_taken += 1
+            while no_class_detected:
+                if STM_msg == b"STOP0000":
+                    print("[RPi] STM Stopped")
+                    #image = image_handling.np_array_to_bytes(image_handling.image_to_np_array(Image.open("images/test.jpg")))
+                    image = image_handling.np_array_to_bytes(picam.take_picture())
+                    print("[RPi] Sending Image")
+                    self.wifi_send_socket.send_message(b"image:"+image)
+                    print("[RPi] Receiving Classes")
+                    classes = self.wifi_recv_socket.receive_message()
+                    raw_classes = classes.removeprefix(b"classes:") 
+                    if raw_classes != "0":
+                        print("[RPi] Classes Detected:{}".format(raw_classes))
+                        no_class_detected = False
+                        bluetooth_coordinates = b"classes:"+self.coordinate+b","+raw_classes
+                        print("[RPi] Sending Classes to Android")
+                        self.to_android.put(bluetooth_coordinates)
+                    else:
+                        print("[RPi] No Classes Detected")
+                        if current_adjustments < self.adjustments:
+                            print("[RPi] Trying Out Different Scanning Angle")
+                            self.stm_socket.write_to_STM(b"FALSE000")
+                            self.stm_socket.write_to_STM(b"END00000")
+                        else:
+                            print("[RPi] All Scanning Angles Exhausted")
+                            no_class_detected = False
+                            bluetooth_coordinates = b"classes:"+self.coordinate+b","+raw_classes
+                            print("[RPi] Sending Classes to Android")
+                            self.to_android.put(bluetooth_coordinates)
+            self.to_wifi.put(b"nextalgo")
+            self.photo_event.clear()  
         return
 
 
