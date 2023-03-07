@@ -21,7 +21,7 @@ class path_planner:
         message_list = []
         destination = []
         popped_path = []
-        reverse_distance = 2* settings.grid_size
+        reverse_distance = 1* settings.grid_size
 
         settings.Car_current_x = car_starting_pos_pixel[0]
         settings.Car_current_y = car_starting_pos_pixel[1]

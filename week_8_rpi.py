@@ -93,13 +93,13 @@ class rpi_manager():
                         STM_data = self.to_STM.get()
                         if STM_data.startswith(b"TAKEPIC")and self.num_of_pictures_taken < self.num_of_pictures_to_take:
                             print("[RPi] Entering Phototaking Event")
-                            coordinate = STM_data.removeprefix(b"TAKEPIC")
-                            coordinate = coordinate.decode("UTF-8")
-                            x,y = [int(num) for num in coordinate.split(",")]
-                            x += 1
-                            y = 20 - y
-                            coordinate_str = str(x)+","+str(y)
-                            self.coordinate = bytes(coordinate_str, "UTF-8")
+                            self.coordinate = STM_data.removeprefix(b"TAKEPIC")
+                            # coordinate = coordinate.decode("UTF-8")
+                            # x,y = [int(num) for num in coordinate.split(",")]
+                            # x += 1
+                            # y = 20 - y
+                            # coordinate_str = str(x)+","+str(y)
+                            # self.coordinate = bytes(coordinate_str, "UTF-8")
                             self.photo_event.set()
                         elif len(STM_data) == config.STM_buffer_size and self.num_of_pictures_taken < self.num_of_pictures_to_take:
                             print(STM_data)
@@ -129,8 +129,8 @@ class rpi_manager():
                 self.wifi_send_socket.send_message(b"image:"+image)
                 print("Receiving Messages")
                 classes = self.wifi_recv_socket.receive_message()
-                print(classes) #classes:15,17
-                raw_classes = classes.removeprefix(b"classes:") #15,17
+                print(classes) 
+                raw_classes = classes.removeprefix(b"classes:") 
                 bluetooth_coordinates = b"classes:"+self.coordinate+b","+raw_classes
                 print(bluetooth_coordinates)
                 self.to_android.put(bluetooth_coordinates)
@@ -140,7 +140,7 @@ class rpi_manager():
 
 
 
-r = rpi_manager(5)
+r = rpi_manager(6)
 r.prestart()
 read_wifi_thread = threading.Thread(target = r.read_wifi)
 #android_communication_thread = threading.Thread(target = android_communication)

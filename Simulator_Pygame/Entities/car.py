@@ -63,7 +63,11 @@ class Car:
             if(destinations[-1]!=None):
                 while(destinations and type(destinations[-1])== str):
                     destinations.pop(-1)
-                current_pos = destinations[-1].copy()
+                try:
+                    if(destinations[-1]!=None):
+                        current_pos = destinations[-1].copy()
+                except IndexError:
+                    pass
 
         return destinations
 

@@ -22,6 +22,7 @@ image_4 = Image.open("images/old_images/image3.jpg")
 image_5 = Image.open("images/old_images/result_2.jpg")
 
 images = [image_1,image_2,image_3,image_4,image_5, image_6, image_7]
+
 new_model = []
 old_model = []
 for image in images:

@@ -126,6 +126,6 @@ while (num_of_pics_taken < num_of_pics_to_take):
 tiled_image = image_handling.image_tiling(image_array)
 tiled_image.show()
 tiled_image.save("images/tiled_images.jpg")
-
+w_send("c:END00000")
 w_send.disconnect()
 w_recv.disconnect()
