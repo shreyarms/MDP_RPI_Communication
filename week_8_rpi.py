@@ -131,7 +131,7 @@ class rpi_manager():
                     #image = image_handling.np_array_to_bytes(image_handling.image_to_np_array(Image.open("images/test.jpg")))
                     image = image_handling.np_array_to_bytes(picam.take_picture())
                     print("[RPi] Sending Image")
-                    self.wifi_send_socket.send_message(b"image:"+image)
+                    self.wifi_send_socket.send_message(int.to_bytes(self.num_of_pictures_taken-1, "UTF-8")+b"_image:"+image)
                     print("[RPi] Receiving Classes")
                     classes = self.wifi_recv_socket.receive_message()
                     raw_classes = classes.removeprefix(b"classes:") 

@@ -14,10 +14,13 @@ import Simulator_Pygame.settings as settings
 num_of_pics_to_take = 6
 num_of_pics_taken = 0
 
+# Declare array to store images for tiling
 image_array = []
 
+# Load Model
 m = model("weights/epoch_148.pt")
 
+# Load Algo
 pygame.init()
 FPS = 60
 FramePerSec = pygame.time.Clock()
@@ -27,15 +30,18 @@ pygame.display.set_caption("MDP Simulator")
 primary_surface = DISPLAYSURF.copy()
 primary_surface.fill([0,0,0])
 
+# Get Socket IP and Port Values
 client = config.socket_rpi_ip
 sending_address = config.socket_sending_port #8080
 receiving_address = config.socket_receiving_port #8081
 
+# Connect To Socket 
 w_recv = wifi_communication(config.socket_buffer_size, config.terminating_str)
 w_recv.initiate_connection(client, sending_address) #8080
 w_send = wifi_communication(config.socket_buffer_size, config.terminating_str)
 w_send.initiate_connection(client, receiving_address) #8081
 
+# Get Obstacles  
 while True:
     message = w_recv.receive_message()
     if message.startswith(b"OBS_"):
@@ -45,7 +51,7 @@ while True:
         obs_algo_input = []
         for obs_str in obs_str_array:
             input = obs_str.split(b",")
-            print(input)
+            # Get X, Y and Angle of Obstacle 
             x = int(input[1]) - 1
             y = 20 - int(input[2])
             angle = 0
@@ -62,10 +68,14 @@ while True:
 
 print("[Wifi] Obstacle Input:{}".format(obs_algo_input))
 
+# Pass Obstacles Into Algo 
 algo = path_planner(obs_algo_input)
+
+# Get Algo Output 
 algo_output_array = algo.final_message_list
 pygame.quit()
 
+# Split Algo Array To Send Point-to-Point Instructions 
 algo_array = []
 start_index = 0
 for algo_output_index in range(0,len(algo_output_array)):
@@ -73,19 +83,22 @@ for algo_output_index in range(0,len(algo_output_array)):
         algo_array.append(algo_output_array[start_index:algo_output_index]+[algo_output_array[algo_output_index]])
         start_index = algo_output_index+1
 
+
 print("[Wifi] Algo Output: {}".format(algo_array))
 algo_output_string = bytes(''.join(algo_array[num_of_pics_taken]), "UTF-8")
 
 #for custom input 
 #custom_input = ["c:FL180000","c:END00000","c:TAKEPIC1,2"]"
 #algo_output_string = bytes(''.join(custom_input), "UTF-8")
+
 w_send.send_message(algo_output_string)
 
 while (num_of_pics_taken < num_of_pics_to_take):
     message = w_recv.receive_message()
     if (message.startswith(b"image:")):
         print("[Wifi] Recived Image")
-        byte_image = message.removeprefix(b"image:")
+        image_data_split = message.split(b"_image:")
+        num_of_pics_taken, byte_image = int(image_data_split[0]), image_data_split[1:]
         np_image = image_handling.bytes_to_np_array(byte_image)
         image = image_handling.np_array_to_image(np_image)
 
@@ -104,7 +117,7 @@ while (num_of_pics_taken < num_of_pics_to_take):
         print("[Wifi] Sending Classes")
         w_send.send_message(classes)
 
-        num_of_pics_taken += 1
+        # num_of_pics_taken += 1
 
         image = image_handling.draw_bbox(image_handling.np_array_to_image(np_image), results_array)
         #image.save("images/bbox_"+str(time.time())+".jpg")
