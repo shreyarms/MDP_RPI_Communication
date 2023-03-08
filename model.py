@@ -16,7 +16,7 @@ class model:
         name = -1
         
         for _, row in result_table.iterrows():
-            if row["confidence"] >= 0.5:
+            if row["confidence"] >= 0.05:
                 xmin_bbox = int(row["xmin"])
                 ymin_bbox = int(row["ymin"])
                 xmax_bbox = int(row["xmax"])

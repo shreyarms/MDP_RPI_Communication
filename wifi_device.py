@@ -96,12 +96,14 @@ w_send.send_message(algo_output_string)
 while (num_of_pics_taken < num_of_pics_to_take):
     message = w_recv.receive_message()
     if (message.startswith(b"image:")):
-        print("[Wifi] Recived Image")
-        image_data_split = message.split(b"_image:")
-        num_of_pics_taken, byte_image = int(image_data_split[0]), image_data_split[1:]
+        print("[Wifi] Received Image")
+        image_data = message.removeprefix(b"image:")
+        image_data_split = image_data.split(b"SEPERATE")
+        print("length:",len(image_data_split))
+        num_of_pics_taken, byte_image = int(image_data_split[0]),b''.join(image_data_split[1:])
         np_image = image_handling.bytes_to_np_array(byte_image)
         image = image_handling.np_array_to_image(np_image)
-
+        image.save("images/"+str(time.time())+".jpg")
         results_array = m.get_results(np_image)
 
         classes = []
@@ -110,7 +112,11 @@ while (num_of_pics_taken < num_of_pics_to_take):
 
         if len(classes) == 0:
             classes.append(str(0))
-    
+        else:
+            image = image_handling.draw_bbox(image_handling.np_array_to_image(np_image), results_array)
+            current_image = ["Image "+str(num_of_pics_taken+1),[image]]
+            image_array.append(current_image)
+        
         classes = "classes:"+ ','.join(classes)
         print("[Wifi] {}".format(classes))
         classes = bytes(classes, 'utf-8')
@@ -119,13 +125,9 @@ while (num_of_pics_taken < num_of_pics_to_take):
 
         # num_of_pics_taken += 1
 
-        image = image_handling.draw_bbox(image_handling.np_array_to_image(np_image), results_array)
-        #image.save("images/bbox_"+str(time.time())+".jpg")
-        current_image = ["Image "+str(num_of_pics_taken),[image]]
-        image_array.append(current_image)
-        
         message = w_recv.receive_message()
-        if message == (b"nextalgo"):
+        if message.startswith(b"nextalgo"):
+            num_of_pics_taken += 1
             print("[Wifi] Sending Next Path")
             # time.sleep(1)
             if num_of_pics_taken < len(algo_array):
@@ -139,6 +141,5 @@ while (num_of_pics_taken < num_of_pics_to_take):
 tiled_image = image_handling.image_tiling(image_array)
 tiled_image.show()
 tiled_image.save("images/tiled_images.jpg")
-w_send("c:END00000")
 w_send.disconnect()
 w_recv.disconnect()

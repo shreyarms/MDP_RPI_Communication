@@ -5,7 +5,7 @@ import numpy as np
 
 m1 = model("weights/epoch_148.pt")
 
-m2 = model("weights/epoch_152.pt")
+m2 = model("weights/best.pt")
 
 image_1 = Image.open("images/old_images/train_1677477845.7311687.jpg")
 image_2 = Image.open("images/old_images/train_1677477958.3576334.jpg")
@@ -19,7 +19,7 @@ image_1 = Image.open("images/old_images/test2image.jpg")
 image_2 = Image.open("images/old_images/result_6.jpg")
 image_3 = Image.open("images/old_images/6_img.jpg")
 image_4 = Image.open("images/old_images/image3.jpg")
-image_5 = Image.open("images/old_images/result_2.jpg")
+image_5 = Image.open("images/1678258016.3022847.jpg")
 
 images = [image_1,image_2,image_3,image_4,image_5, image_6, image_7]
 

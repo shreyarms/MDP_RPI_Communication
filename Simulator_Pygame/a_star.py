@@ -459,11 +459,11 @@ class astar:
         for path in path_list:
             if(path[1]== 'straight'):
                 length = self.heuristic(temp_current,path[0]) / settings.grid_size * 10
-                message_list.extend(['c:FS' + str(int((length * 1000))).zfill(6)])
+                message_list.extend(['c:FS' + str(int((abs(length-2) * 1000))).zfill(6)])
                 temp_current = path[0]
             elif(path[1]== 'reverse'):
                 length = self.heuristic(temp_current,path[0]) / settings.grid_size * 10
-                message_list.extend(['c:BS' + str(int((length * 1000))).zfill(6)])
+                message_list.extend(['c:BS' + str(int((abs(length-2) * 1000))).zfill(6)])
                 temp_current = path[0]
             elif(path[1]== 'left'):
                 message_list.extend(['c:FL090000']) #forward left 90 deg
