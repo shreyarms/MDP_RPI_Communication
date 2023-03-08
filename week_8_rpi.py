@@ -18,7 +18,7 @@ class rpi_manager():
         self.to_STM = queue.Queue()
         self.to_wifi = queue.Queue()
         self.coordinate = None
-        self.adjustments = 2
+        self.adjustments = 3
         self.bluetooth_socket = bluetooth_communication(config.bluetooth_uuid,config.bluetooth_socket_buffer_size,config.terminating_str)
         self.wifi_recv_socket = wifi_communication(config.socket_buffer_size,config.terminating_str)
         self.wifi_send_socket = wifi_communication(config.socket_buffer_size,config.terminating_str)
