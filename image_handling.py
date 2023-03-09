@@ -18,7 +18,7 @@ def draw_bbox(image,result_array):
     for result in result_array:
         bb_image.rectangle(result[0], outline ="red")
         font = ImageFont.truetype(config.label_font, config.label_size)
-        bb_image.text(result[0],result[1]+"\n"+str(round(result[2],2)), font=font)
+        bb_image.text(result[0],result[4]+"\n"+"Image ID:"+result[1]+"\n"+str(round(result[2],2)), font=font)
     return image
 
 def image_to_np_array(image):

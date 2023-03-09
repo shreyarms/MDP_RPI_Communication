@@ -6,7 +6,7 @@ import time
 
 m1 = model("weights/epoch_027.pt")
 
-m2 = model("weights/best_shunnen.pt")
+m2 = model("weights/pls_work_1.pt")
 
 image_1 = Image.open("images/old_images/train_1677477845.7311687.jpg")
 image_2 = Image.open("images/old_images/train_1677477958.3576334.jpg")
@@ -28,12 +28,10 @@ model_1 = []
 model_2 = []
 for image in images:
     np_image = image_handling.image_to_np_array(image)
-    start = time.time()
     result_array_m1 = m1.get_results(np_image)
-    end = time.time()
-    print(end-start)
     result_array_m2 = m2.get_results(np_image)
-    print(result_array_m1, result_array_m2)
+    if len(result_array_m1) > 0 and len(result_array_m2) > 0:
+        print(result_array_m1[0], result_array_m2[0])
     im1 = image_handling.draw_bbox(image_handling.np_array_to_image(np_image), result_array_m1)
     im2 = image_handling.draw_bbox(image_handling.np_array_to_image(np_image), result_array_m2)
     model_1.append(im1)

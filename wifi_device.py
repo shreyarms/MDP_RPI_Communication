@@ -11,14 +11,14 @@ from Simulator_Pygame.path_planner import path_planner
 import Simulator_Pygame.settings as settings
 
 # Set number of pictures to take
-num_of_pics_to_take = 6
+num_of_pics_to_take = 8
 num_of_pics_taken = 0
 
 # Declare array to store images for tiling
 image_array = []
 
 # Load Model
-m = model("weights/epoch_148.pt")
+m = model("weights/week_8_best.pt")
 
 # Load Algo
 pygame.init()
