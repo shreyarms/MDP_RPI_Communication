@@ -162,7 +162,7 @@ class path_planner:
                 if(movement_path!= None):
                     # a_star_dubin_destination, a_star_dubin_message, a_star_path= astar.a_star_dubins(movement_path,path_taken,algorithm,dubin,car,invalid_positions,grid_coordinates)
                     if(a_star_dubin_destination== None): # No dubin in path or dubin only gives a straight command
-                        movement_path = astar.adjust_to_irl_turning_radius(movement_path)
+                        # movement_path = astar.adjust_to_irl_turning_radius(movement_path)
                         movement_path = astar.a_star_path_compressor(movement_path)
                         print()
                         print("movement_path = ",movement_path)

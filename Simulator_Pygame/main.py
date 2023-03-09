@@ -48,14 +48,17 @@ dubin = algorithm.Dubin()
 #     else:
 #         print("Invalid Choice")
 destinations = []
+# obstacle_positions = algorithm.Dubin.random_obstacle_generator(dubin, OBSTACLE_COUNT)
 # obstacle_positions= [[9, 6, -90], [17, 17, 90], [11, 12, -90], [13, 2, 180], [17, 12, 90]]
 # obstacle_positions= [[11, 11, 0], [10, 0, -90], [13, 7, 90], [7, 3, 180], [2, 9, 90]]
  
-obstacle_positions = [[19, 12, 180], [0, 2, 0]] #LSL
-obstacle_positions = [[8,9,90], [19, 12, 180]] #all except LSR
-# obstacle_positions = [[2, 6, -90]]
+# obstacle_positions = [[19, 12, 180], [0, 2, 0]] #LSL
+# obstacle_positions = [[8,9,90], [19, 12, 180]] #all except LSR
+# # obstacle_positions = [[2, 6, -90]]
+# obstacle_positions = [[13,14,180], [3,6,0], [19, 2, 180]]
+obstacle_positions = [[10,19,90], [3,6,0], [19, 2, 180]]
 
-obstacle_positions =  [[12, 7, 180], [0, 10, 0], [8, 18, 90], [9, 17, 0], [16, 7, -90], [8, 5, -90]] #[[19, 12, 180], [0, 2, 0]]
+# obstacle_positions =  [[12, 7, 180], [0, 10, 0], [8, 18, 90], [9, 17, 0], [16, 7, -90], [8, 5, -90]] #[[19, 12, 180], [0, 2, 0]]
 
 # obstacle_positions =  [[10, 13, -90], [1, 14, 0]]
 # obstacle_positions =  [[7, 13, 90], [14, 7, 0], [4, 12, 90], [11, 13, 0], [12, 13, 0]]

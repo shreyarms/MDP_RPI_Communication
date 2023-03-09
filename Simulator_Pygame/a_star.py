@@ -123,7 +123,7 @@ class astar:
             # if total cost is tied, tie breaking is first determined by highest path cost, then counter if path cost also ties
             total_cost, _, _, current = frontier_nodes.get() # "_" is a dont care variable that will not be used
             print(".", end = '')
-            if (abs(current[0]-target[0])<= 0.5*settings.grid_size and abs(current[1]-target[1])<= 0.5*settings.grid_size and current[2]==target[2]):
+            if (abs(current[0]-target[0])<= 0.3*settings.grid_size and abs(current[1]-target[1])<= 0.3*settings.grid_size and current[2]==target[2]):
                 print("A* Path Found!")
                 if(backtrack[current][1]== "straight" or backtrack[current][1]== "reverse"): #For reaching target when compressing straight and reverse
                     movement_list.append([current, backtrack[current][1], None])
@@ -177,9 +177,10 @@ class astar:
     def move_turn(self, start, turning_radius, direction, reverse):
         """Return target location after turning"""
         #could cut this down by half but i lazy
-        if(direction== 'left'):
+
+        if(direction== 'left' or direction=='reverse left'):
             direction = "L"
-        elif(direction== 'right'):
+        elif(direction== 'right' or direction=='reverse right'):
             direction = "R"
         temp_start = start
         temp_start = list(temp_start)
@@ -335,6 +336,7 @@ class astar:
         elif(path_list[last][1]=='reverse left' or path_list[last][1]=='reverse right'):
             target = self.move_turn(path_list[last][0],settings.a_star_turning_radius,path_list[last][1],True)
             target_coor = [target[0],target[1],target[2]]
+            print("target_coor= ",target_coor)
             path_list.append([target_coor, 'reverse', None])
 
         # if movement is a turn, change the starting point and center of the turn to compensate for the reduced turning radius
@@ -459,11 +461,15 @@ class astar:
         for path in path_list:
             if(path[1]== 'straight'):
                 length = self.heuristic(temp_current,path[0]) / settings.grid_size * 10
-                message_list.extend(['c:FS' + str(int((abs(length-2) * 1000))).zfill(6)])
+                if(length>=2):
+                    length -=0
+                message_list.extend(['c:FS' + str(int((length * 1000))).zfill(6)])
                 temp_current = path[0]
             elif(path[1]== 'reverse'):
                 length = self.heuristic(temp_current,path[0]) / settings.grid_size * 10
-                message_list.extend(['c:BS' + str(int((abs(length-2) * 1000))).zfill(6)])
+                if(length>=2):
+                    length -=0
+                message_list.extend(['c:BS' + str(int((length * 1000))).zfill(6)])
                 temp_current = path[0]
             elif(path[1]== 'left'):
                 message_list.extend(['c:FL090000']) #forward left 90 deg

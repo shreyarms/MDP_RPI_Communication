@@ -95,15 +95,8 @@ class rpi_manager():
                         if STM_data.startswith(b"TAKEPIC")and self.num_of_pictures_taken < self.num_of_pictures_to_take:
                             print("[RPi] Entering Phototaking Event")
                             self.coordinate = STM_data.removeprefix(b"TAKEPIC")
-                            # coordinate = coordinate.decode("UTF-8")
-                            # x,y = [int(num) for num in coordinate.split(",")]
-                            # x += 1
-                            # y = 20 - y
-                            # coordinate_str = str(x)+","+str(y)
-                            # self.coordinate = bytes(coordinate_str, "UTF-8")
                             self.photo_event.set()
                         elif len(STM_data) == config.STM_buffer_size and self.num_of_pictures_taken < self.num_of_pictures_to_take:
-                            print(STM_data)
                             self.stm_socket.write_to_STM(STM_data)
                             if(STM_data == b"END00000" and self.num_of_pictures_taken == self.num_of_pictures_to_take):
                                 self.to_android.put(b"STOP")
@@ -120,41 +113,41 @@ class rpi_manager():
     def take_picture(self):
         while True:
             self.photo_event.wait()
-            print("[RPi] Inside Event")
+            # print("[RPi] Inside Event")
             no_class_detected = True
             current_adjustments = 0
             while no_class_detected:
                 STM_msg = self.stm_socket.read_from_STM()
                 if STM_msg == b"STOP0000":
-                    print("[RPi] STM Stopped")
+                    # print("[RPi] STM Stopped")
                     image = image_handling.np_array_to_bytes(picam.take_picture())
-                    print("[RPi] Sending Image")
+                    # print("[RPi] Sending Image")
                     #image_message structure:image:0SEPERATE<image_data>
                     #length: 640*640*3 + 15
                     image_message = b"image:"+str(self.num_of_pictures_taken).encode()+b"SEPERATE"+image
                     self.wifi_send_socket.send_message(image_message)
-                    print("[RPi] Receiving Classes")
+                    # print("[RPi] Receiving Classes")
                     classes = self.wifi_recv_socket.receive_message()
                     raw_classes = classes.removeprefix(b"classes:") 
                     if raw_classes != b"0":
-                        print("[RPi] Classes Detected:{}".format(raw_classes))
+                        # print("[RPi] Classes Detected:{}".format(raw_classes))
                         no_class_detected = False
                         bluetooth_coordinates = b"classes:"+self.coordinate+b","+raw_classes
-                        print("[RPi] Sending Classes to Android")
+                        # print("[RPi] Sending Classes to Android")
                         self.to_android.put(bluetooth_coordinates)
                     else:
-                        print("[RPi] No Classes Detected")
+                        # print("[RPi] No Classes Detected")
                         if current_adjustments < self.adjustments:
-                            print("[RPi] Trying Out Different Scanning Angle")
+                            # print("[RPi] Trying Out Different Scanning Angle")
                             current_adjustments += 1
                             self.stm_socket.write_to_STM(b"FALSE000")
                             self.stm_socket.write_to_STM(b"END00000")
                             self.wifi_send_socket.send_message(b"retry")
                         else:
-                            print("[RPi] All Scanning Angles Exhausted")
+                            # print("[RPi] All Scanning Angles Exhausted")
                             no_class_detected = False
                             bluetooth_coordinates = b"classes:"+self.coordinate+b","+raw_classes
-                            print("[RPi] Sending Classes to Android")
+                            # print("[RPi] Sending Classes to Android")
                             self.to_android.put(bluetooth_coordinates)
             self.num_of_pictures_taken += 1
             self.to_wifi.put(b"nextalgo")

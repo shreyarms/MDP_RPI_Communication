@@ -39,8 +39,10 @@ Car_width = 3 * grid_size #Car is 3x3 grid big
 Car_height = 3 * grid_size
 step_distance = grid_size/10 * 2 #how fast the car moves 2cm/sec
 
-irl_right_turn_radius = 2.6 #change this should turning radius change
-irl_left_turn_radius = 2.5 #change this should turning radius change
+irl_right_turn_radius = 2.545 #change this should turning radius change
+irl_left_turn_radius = 2.45 #change this should turning radius change
+# irl_right_turn_radius = 2.6 #change this should turning radius change
+# irl_left_turn_radius = 2.5 #change this should turning radius change
 right_turn_radius =  irl_left_turn_radius * grid_size
 left_turn_radius = irl_right_turn_radius * grid_size
 a_star_turning_radius = max(math.ceil(irl_left_turn_radius),math.ceil(irl_right_turn_radius)) * grid_size

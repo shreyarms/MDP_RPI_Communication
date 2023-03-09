@@ -99,11 +99,10 @@ while (num_of_pics_taken < num_of_pics_to_take):
         print("[Wifi] Received Image")
         image_data = message.removeprefix(b"image:")
         image_data_split = image_data.split(b"SEPERATE")
-        print("length:",len(image_data_split))
         num_of_pics_taken, byte_image = int(image_data_split[0]),b''.join(image_data_split[1:])
         np_image = image_handling.bytes_to_np_array(byte_image)
         image = image_handling.np_array_to_image(np_image)
-        image.save("images/"+str(time.time())+".jpg")
+        image.save("images/"+str(time.time()) +".jpg")
         results_array = m.get_results(np_image)
 
         classes = []

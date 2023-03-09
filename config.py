@@ -1,6 +1,6 @@
 #socket 
 socket_rpi_ip = "192.168.27.27"
-socket_buffer_size = 8192
+socket_buffer_size = 16384
 socket_sending_port = 8080
 socket_receiving_port = 8081
 # image rec
