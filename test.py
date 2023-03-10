@@ -4,9 +4,9 @@ from PIL import Image
 import numpy as np
 import time
 
-m1 = model("weights/epoch_027.pt")
+m1 = model("weights/pls_work_1.pt")
 
-m2 = model("weights/pls_work_1.pt")
+m2 = model("weights/week_8_best.pt")
 
 image_1 = Image.open("images/old_images/train_1677477845.7311687.jpg")
 image_2 = Image.open("images/old_images/train_1677477958.3576334.jpg")
@@ -18,9 +18,9 @@ image_7 = Image.open("images/rsz_37marchtest.jpg")
 image_8 = Image.open("images/old_images/test2image.jpg")
 image_9 = Image.open("images/old_images/result_6.jpg")
 image_10 = Image.open("images/old_images/6_img.jpg")
-image_11 = Image.open("images/1678257594.4392626.jpg")
-image_12 = Image.open("images/1678258016.3022847.jpg")
-image_13 = Image.open("images/1678258016.3022847.jpg")
+image_11 = Image.open("try_2/photo_6075840039377549090_x.jpg")
+image_12 = Image.open("try/photo_6075840039377549041_x.jpg")
+image_13 = Image.open("try/photo_6075840039377549040_x.jpg")
 
 images = [image_1,image_2,image_3,image_4,image_5, image_6, image_7, image_8, image_9, image_10, image_11, image_12,image_13]
 

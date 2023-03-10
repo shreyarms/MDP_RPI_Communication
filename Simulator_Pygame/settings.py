@@ -40,7 +40,7 @@ Car_height = 3 * grid_size
 step_distance = grid_size/10 * 2 #how fast the car moves 2cm/sec
 
 irl_right_turn_radius = 2.545 #change this should turning radius change
-irl_left_turn_radius = 2.45 #change this should turning radius change
+irl_left_turn_radius = 2.55 #change this should turning radius change
 # irl_right_turn_radius = 2.6 #change this should turning radius change
 # irl_left_turn_radius = 2.5 #change this should turning radius change
 right_turn_radius =  irl_left_turn_radius * grid_size
