@@ -56,3 +56,10 @@ names = {
     '39': "Left",
     '40': "Circle"
 }
+#paths for week 9 [turn number, turn direction]
+# 0,0 : 1st right
+# 0,1 : 1st left
+# 1,0 : 2nd right 
+# 1,1 : 2nd left 
+
+path = [['']]
