@@ -30,9 +30,7 @@ class rpi_manager():
         while True: 
             message = self.bluetooth_socket.receive_message()
             if message.startswith(b"BANANAS"):
-                self.to_STM.put(b"SENSOR00")
-                self.to_STM.put(b"END00000")
-                self.to_STM.put(b"TAKEPIC")
+                self.to_STM.put(b"c:SENSOR30,c:END00000,c:TAKEPIC")
                 print("[RPi] BANANAS")
                 break
         return
@@ -83,11 +81,19 @@ class rpi_manager():
                 try: 
                     if not self.to_STM.empty():
                         STM_data = self.to_STM.get()
-                        if STM_data.startswith(b"TAKEPIC"):
-                            print("[RPi] Entering Phototaking Event")
-                            self.photo_event.set()
-                        elif len(STM_data) == config.STM_buffer_size:
-                            self.stm_socket.write_to_STM(STM_data)           
+                        if STM_data.startswith(b"c:"):
+                            instructions = STM_data.split(b'c:')
+                            for instruction in instructions:
+                                print(instruction)
+                                instruction = instruction.removeprefix(b"c:")
+                                instruction = instruction.removesuffix(b",")
+                                print(instruction)
+                                if instruction.startswith(b"TAKEPIC"):
+                                    print("[RPi] Entering Phototaking Event")
+                                    self.photo_event.set()
+                                elif len(instruction) == config.STM_buffer_size:
+                                    print(instruction)
+                                    self.stm_socket.write_to_STM(instruction)           
                 except Exception as e:
                     print("[RPi] Could Not Send to STM: {}".format(str(e)))
             else:
@@ -105,10 +111,10 @@ class rpi_manager():
                 self.wifi_send_socket.send_message(b"image:"+image)
                 print("Receiving Messages")
                 classes = self.wifi_recv_socket.receive_message()
-                print(classes) #classes:15,17
                 raw_classes = classes.removeprefix(b"classes:") #15,17
                 # if turn_number = 1, first turn. turn_number 2 is the second turn + going back to car park
                 # after first turn, stm needs to move forward using ultrasound sensor till 30cm away from box, then stops and sends take pic
+                print(raw_classes)
                 if raw_classes[0] == "38":
                     STM_input = config.path[self.turn_number-1][0]
                     self.to_STM.put(STM_input)

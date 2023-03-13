@@ -62,4 +62,4 @@ names = {
 # 1,0 : 2nd right 
 # 1,1 : 2nd left 
 
-path = [['']]
+path = [['c:FR090000,c:END00000'],['c:FL090000,c:END000000'],['c:FR090000,c:END00000'],['c:FL090000,c:END00000']]

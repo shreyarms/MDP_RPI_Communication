@@ -18,16 +18,11 @@ class rpi_manager():
         self.to_android = queue.Queue()
         self.to_STM = queue.Queue()
         self.model = model("weights/old_weights/v5_best.pt")
-        # self.to_wifi = queue.Queue()
         self.bluetooth_socket = bluetooth_communication(config.bluetooth_uuid,config.bluetooth_socket_buffer_size,config.terminating_str)
-        # self.wifi_recv_socket = wifi_communication(config.socket_buffer_size,config.terminating_str)
-        # self.wifi_send_socket = wifi_communication(config.socket_buffer_size,config.terminating_str)
         self.stm_socket = stm_communication(config.serial_port,config.baud_rate,config.STM_buffer_size)
     
     def prestart(self):
         self.bluetooth_socket.advertise_and_accept_connection(config.bluetooth_host, config.bluetooth_port)
-        # self.wifi_send_socket.accept_connection(config.socket_rpi_ip, config.socket_sending_port) #8080
-        # self.wifi_recv_socket.accept_connection(config.socket_rpi_ip, config.socket_receiving_port) #8081
         self.stm_socket.connect_STM()
         
         while True: 
