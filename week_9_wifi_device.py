@@ -3,7 +3,7 @@ import image_handling
 from PIL import Image
 
 # Load Model
-m = model("weights/best_v5.pt")
+m = model("weights/best_week9_latest.pt")
 
 
 import pygame

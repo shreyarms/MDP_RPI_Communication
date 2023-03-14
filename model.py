@@ -4,7 +4,7 @@ import config
 
 class model:
     def __init__(self,weights_path) -> None:
-        self.model = torch.hub.load("yolov5", 'custom', weights_path, source = "local", force_reload = False, trust_repo=True)
+        self.model = torch.hub.load("yolov7", 'custom', weights_path, source = "local", force_reload = False, trust_repo=True)
     
     def get_results(self,images):
         results = self.model(images)
