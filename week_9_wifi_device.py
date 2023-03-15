@@ -54,6 +54,7 @@ while (num_of_pics_taken < num_of_pics_to_take):
             image.save("images/"+str(time.time()) +".jpg")
             current_image = ["Image "+str(num_of_pics_taken+1),[image]]
             image_array.append(current_image)
+            num_of_pics_taken += 1
         
         classes = "classes:"+ ','.join(classes)
         print("[Wifi] {}".format(classes))
@@ -61,7 +62,7 @@ while (num_of_pics_taken < num_of_pics_to_take):
         print("[Wifi] Sending Classes")
         w_send.send_message(classes)
 
-        num_of_pics_taken += 1
+        
 
         # message = w_recv.receive_message()
         # if message.startswith(b"nextalgo"):

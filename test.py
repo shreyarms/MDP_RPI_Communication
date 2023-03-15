@@ -4,23 +4,24 @@ from PIL import Image
 import numpy as np
 import time
 
-m1 = model("weights/pls_work_1.pt")
+m1 = model("weights/best_week9_latest.pt")
+
 
 m2 = model("weights/week_8_best.pt")
 
-image_1 = Image.open("images/old_images/train_1677477845.7311687.jpg")
-image_2 = Image.open("images/old_images/train_1677477958.3576334.jpg")
-image_3 = Image.open("images/old_images/train_1677478067.7604969.jpg")
-image_4 = Image.open("images/old_images/train_1677478113.1776884.jpg")
-image_5 = Image.open("images/old_images/train_1677478152.7393823.jpg")
-image_6 = Image.open("images/old_images/train_1677478200.4734597.jpg")
-image_7 = Image.open("images/rsz_37marchtest.jpg")
-image_8 = Image.open("images/old_images/test2image.jpg")
-image_9 = Image.open("images/old_images/result_6.jpg")
-image_10 = Image.open("images/old_images/6_img.jpg")
-image_11 = Image.open("try_2/photo_6075840039377549090_x.jpg")
-image_12 = Image.open("try/photo_6075840039377549041_x.jpg")
-image_13 = Image.open("try/photo_6075840039377549040_x.jpg")
+image_1 = Image.open("images/1678864658.352452.jpg")
+image_2 = Image.open("images/1678775081.5117319.jpg")
+image_3 = Image.open("images/1678773918.017566.jpg")
+image_4 = Image.open("images/1678773908.6755881.jpg")
+image_5 = Image.open("images/1678773677.8837178.jpg")
+image_6 = Image.open("images/1678773667.729748.jpg")
+image_7 = Image.open("images/1678772732.325566.jpg")
+image_8 = Image.open("images/1678772433.6297758.jpg")
+image_9 = Image.open("images/1678772272.488378.jpg")
+image_10 = Image.open("images/1678771828.926343.jpg")
+image_11 = Image.open("images/1678771623.757787.jpg")
+image_12 = Image.open("images/1678771614.724361.jpg")
+image_13 = Image.open("images/1678775091.525528.jpg")
 
 images = [image_1,image_2,image_3,image_4,image_5, image_6, image_7, image_8, image_9, image_10, image_11, image_12,image_13]
 
@@ -31,7 +32,7 @@ for image in images:
     result_array_m1 = m1.get_results(np_image)
     result_array_m2 = m2.get_results(np_image)
     if len(result_array_m1) > 0 and len(result_array_m2) > 0:
-        print(result_array_m1[0], result_array_m2[0])
+        print("\nnew model:",result_array_m1, "\nold model:",result_array_m2)
     im1 = image_handling.draw_bbox(image_handling.np_array_to_image(np_image), result_array_m1)
     im2 = image_handling.draw_bbox(image_handling.np_array_to_image(np_image), result_array_m2)
     model_1.append(im1)

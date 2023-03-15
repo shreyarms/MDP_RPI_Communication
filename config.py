@@ -70,23 +70,6 @@ path = [
 ]
 
 
-# # first turn : [right, left]
-# path1 = [
-#     b"c:FR024331,c:FS037776,c:FL024331,c:R0000000,c:END00000,c:TAKEPIC",
-#     b"c:FL031397,c:FS033948,c:FR031397,c:L0000000,c:END00000,c:TAKEPIC",
-# ]
-
-# # first turn left, second turn : [right, left]
-# path2left = [
-#     b"c:SENSOR60,c:FR050731,c:FS073195,c:FL141801,c:FS023621,c:FR002140,c:FS023621,c:FL091070,c:MOVEMEMO,c:FL065307,c:FS023022,c:FR065307,c:MOVEMEMO,c:FL069986,c:FS023569,c:FR069986,c:SENSOR10,c:END00000",
-#     b"c:SENSOR60,c:FL017965,c:FS073161,c:FR106842,c:FS025505,c:FR002246,c:FS025505,c:FR088877,c:MOVEMEMO,c:FR065307,c:FS023022,c:FL065307,c:MOVEMEMO,c:FR069986,c:FS023569,c:FL069986,c:SENSOR10,c:END00000",
-# ]
-
-# # first turn right, second turn : [right, left]
-# path2right = [
-#     b"c:SENSOR60,c:FR017965,c:FS073161,c:FL109035,c:FS023621,c:FR002140,c:FS023621,c:FL091070,c:MOVEMEMO,c:FL065307,c:FS023022,c:FR065307,c:MOVEMEMO,c:FL069986,c:FS023569,c:FR069986,c:SENSOR10,c:END00000",
-#     b"c:SENSOR60,c:FL045396,c:FS070402,c:FR133999,c:FS020506,c:FR002794,c:FS020506,c:FR088603,c:MOVEMEMO,c:FR059617,c:FS023548,c:FL059617,c:SENSOR10,c:END00000",
-# ]
 
 # first turn : [right, left]
 path1 = [
@@ -99,9 +82,26 @@ path2left = [
     b"c:SENSOR50,c:FR057645,c:FS061298,c:FL148715,c:FS047242,c:FL091070,c:MOVEMEMO,c:FL065307,c:FS023022,c:FR065307,c:SENSOR10,c:END00000",
     b"c:SENSOR50,c:FL020794,c:FS061258,c:FR109671,c:FS050101,c:FR088877,c:MOVEMEMO,c:FR065307,c:FS023022,c:FL065307,c:SENSOR10,c:END00000",
 ]
-#c:FR002246
+
 # first turn right, second turn : [right, left]
 path2right = [
     b"c:SENSOR50,c:FR020794,c:FS061258,c:FL111864,c:FS04724,c:FL091070,c:MOVEMEMO,c:FL065307,c:FS023022,c:FR065307,c:SENSOR10,c:END00000",
     b"c:SENSOR50,c:FL057645,c:FS061298,c:FR146522,c:FS050101,c:FR088877,c:MOVEMEMO,c:FR065307,c:FS023022,c:FL065307,c:SENSOR10,c:END00000",
 ]
+
+
+# ------------------------------------------------------------------------------------------------------
+
+# first turn : [right, left]
+path1fast = [
+    b"c:P1R00000,c:END00000",
+    b"c:P1L00000,c:END00000"
+]
+
+# second turn : [right, left]
+path2fast = [
+    b"c:P2R00000,c:END00000",
+    b"c:P2L00000,c:END00000"
+]
+
+retry = b"c:SENSOR60,c:END00000,c:TAKEPIC"

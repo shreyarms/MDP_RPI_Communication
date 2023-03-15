@@ -132,10 +132,13 @@ class rpi_manager:
                 # if turn_number = 1, first turn. turn_number 2 is the second turn + going back to car park
                 # after first turn, stm needs to move forward using ultrasound sensor till 30cm away from box, then stops and sends take pic
                 print(raw_classes)
-                if raw_classes[0] == "38":
+                i = 0
+                while(raw_classes[i] == "41"):
+                    i+=1
+                if raw_classes[i] == "38":
                     STM_input = config.path[self.turn_number - 1][0]
                     self.to_STM.put(STM_input)
-                elif raw_classes[0] == "39":
+                elif raw_classes[i] == "39":
                     STM_input = config.path[self.turn_number - 1][1]
                     self.to_STM.put(STM_input)
                 self.turn_number += 1
