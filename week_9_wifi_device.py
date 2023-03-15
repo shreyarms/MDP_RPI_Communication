@@ -1,11 +1,17 @@
-import pygame
-from wifi_communication import wifi_communication
 from model import model 
 import image_handling
+from PIL import Image
+
+# Load Model
+m = model("weights/best_week9_latest.pt")
+
+
+import pygame
+from wifi_communication import wifi_communication
 import config
 import socket 
 import time
-from PIL import Image
+
 from pygame.locals import *
 from Simulator_Pygame.path_planner import path_planner 
 import Simulator_Pygame.settings as settings
@@ -13,8 +19,8 @@ import Simulator_Pygame.settings as settings
 # Declare array to store images for tiling
 image_array = []
 
-# Load Model
-m = model("weights/week_8_best.pt")
+num_of_pics_taken = 0
+num_of_pics_to_take = 2
 
 # Get Socket IP and Port Values
 client = config.socket_rpi_ip
@@ -27,7 +33,7 @@ w_recv.initiate_connection(client, sending_address) #8080
 w_send = wifi_communication(config.socket_buffer_size, config.terminating_str)
 w_send.initiate_connection(client, receiving_address) #8081
 
-while True:
+while (num_of_pics_taken < num_of_pics_to_take):
     message = w_recv.receive_message()
     if (message.startswith(b"image:")):
         print("[Wifi] Received Image")
@@ -43,9 +49,12 @@ while True:
 
         if len(classes) == 0:
             classes.append(str(0))
-        else:
+        else:            
             image = image_handling.draw_bbox(image_handling.np_array_to_image(np_image), results_array)
             image.save("images/"+str(time.time()) +".jpg")
+            current_image = ["Image "+str(num_of_pics_taken+1),[image]]
+            image_array.append(current_image)
+            num_of_pics_taken += 1
         
         classes = "classes:"+ ','.join(classes)
         print("[Wifi] {}".format(classes))
@@ -53,7 +62,7 @@ while True:
         print("[Wifi] Sending Classes")
         w_send.send_message(classes)
 
-        # # num_of_pics_taken += 1
+        
 
         # message = w_recv.receive_message()
         # if message.startswith(b"nextalgo"):
@@ -68,8 +77,8 @@ while True:
         #     else:
         #         break
 
-# tiled_image = image_handling.image_tiling(image_array)
-# tiled_image.show()
-# tiled_image.save("images/tiled_images.jpg")
+tiled_image = image_handling.image_tiling(image_array)
+tiled_image.show()
+tiled_image.save("images/tiled_images.jpg")
 w_send.disconnect()
 w_recv.disconnect()
