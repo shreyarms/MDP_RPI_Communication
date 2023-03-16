@@ -1,5 +1,5 @@
 # socket
-socket_rpi_ip = "192.168.27.27"
+socket_rpi_ip = "127.0.0.1"
 socket_buffer_size = 16384
 socket_sending_port = 8080
 socket_receiving_port = 8081
@@ -61,7 +61,6 @@ names = {
 # 0,1 : 1st left
 # 1,0 : 2nd right
 # 1,1 : 2nd left
-
 path = [
     ["c:FR090000,c:END00000"],
     ["c:FL090000,c:END000000"],
@@ -94,8 +93,8 @@ path2right = [
 
 # first turn : [right, left]
 path1fast = [
-    b"c:P1R00000,c:END00000",
-    b"c:P1L00000,c:END00000"
+    b"c:P1R00000,c:END00000,c:TAKEPIC",
+    b"c:P1L00000,c:END00000,c:TAKEPIC"
 ]
 
 # second turn : [right, left]
@@ -104,4 +103,4 @@ path2fast = [
     b"c:P2L00000,c:END00000"
 ]
 
-retry = b"c:SENSOR60,c:END00000,c:TAKEPIC"
+retry = b"c:SENSOR60,c:END00000"

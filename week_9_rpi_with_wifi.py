@@ -8,11 +8,13 @@ import config
 import queue
 import threading
 import select
+import time
 
 
 class rpi_manager:
     def __init__(self):
-        self.turn_number = 1
+        self.turn_number = 0
+        self.prev_turn = None
         self.photo_event = threading.Event()
         self.to_android = queue.Queue()
         self.to_STM = queue.Queue()
@@ -46,7 +48,11 @@ class rpi_manager:
 
         while True:
             message = self.bluetooth_socket.receive_message()
+            message = b"BANANAS"
             if message.startswith(b"BANANAS"):
+                #image = image_handling.np_array_to_bytes(image_handling.image_to_np_array(Image.open("images/test_1.jpg")))
+                image = image_handling.np_array_to_bytes(picam.take_picture())
+                self.to_wifi.put(b"preimage:"+image)
                 self.to_STM.put(b"c:SENSOR30,c:END00000,c:TAKEPIC")
                 print("[RPi] BANANAS")
                 break
@@ -79,19 +85,6 @@ class rpi_manager:
             else:
                 continue
 
-    # def write_android(self):
-    #     while True:
-    #         if not self.photo_event.is_set():
-    #             try:
-    #                 if not self.to_android.empty():
-    #                     message = self.to_android.get()
-    #                     print("Bluetooth:{}".format(message))
-    #                     self.bluetooth_socket.send_message(message)
-    #             except Exception as e:
-    #                 print("[RPi] Could Not Send to Android: {}".format(str(e)))
-    #         else:
-    #             continue
-
     def write_STM(self):
         while True:
             if not self.photo_event.is_set():
@@ -101,16 +94,14 @@ class rpi_manager:
                         if STM_data.startswith(b"c:"):
                             instructions = STM_data.split(b"c:")
                             for instruction in instructions:
-                                print(instruction)
                                 instruction = instruction.removeprefix(b"c:")
                                 instruction = instruction.removesuffix(b",")
-                                print(instruction)
                                 if instruction.startswith(b"TAKEPIC"):
                                     print("[RPi] Entering Phototaking Event")
                                     self.photo_event.set()
                                 elif len(instruction) == config.STM_buffer_size:
                                     print(instruction)
-                                    self.stm_socket.write_to_STM(instruction)
+                                    self.stm_socket.write_to_STM(instruction)           
                 except Exception as e:
                     print("[RPi] Could Not Send to STM: {}".format(str(e)))
             else:
@@ -119,29 +110,78 @@ class rpi_manager:
     def take_picture(self):
         while True:
             self.photo_event.wait()
-            print("[RPi] Inside Event")
+            print("[TAKEPIC] Inside Event")
             STM_msg = self.stm_socket.read_from_STM()
             if STM_msg == b"STOP0000":
-                print("[RPi] STM Stopped")
-                # image = image_handling.np_array_to_bytes(image_handling.image_to_np_array(Image.open("images/test.jpg")))
-                image = image_handling.np_array_to_bytes(picam.take_picture())
-                self.wifi_send_socket.send_message(b"image:" + image)
-                print("Receiving Messages")
-                classes = self.wifi_recv_socket.receive_message()
-                raw_classes = classes.removeprefix(b"classes:")  # 15,17
-                # if turn_number = 1, first turn. turn_number 2 is the second turn + going back to car park
-                # after first turn, stm needs to move forward using ultrasound sensor till 30cm away from box, then stops and sends take pic
-                print(raw_classes)
-                i = 0
-                while(raw_classes[i] == "41"):
-                    i+=1
-                if raw_classes[i] == "38":
-                    STM_input = config.path[self.turn_number - 1][0]
-                    self.to_STM.put(STM_input)
-                elif raw_classes[i] == "39":
-                    STM_input = config.path[self.turn_number - 1][1]
-                    self.to_STM.put(STM_input)
-                self.turn_number += 1
+                retry = True
+                print("[TAKEPIC] STM Stopped")
+                if self.turn_number == 0:
+                    self.wifi_send_socket.send_message(b"FINDOBS:"+str(self.turn_number).encode())
+                    print("[TAKEPIC] First Turn, Receiving Classes From Image Taken at Start Point")
+                    classes = self.wifi_recv_socket.receive_message()
+                else:
+                    print("[TAKEPIC] Taking Picture")
+                    #image = image_handling.np_array_to_bytes(image_handling.image_to_np_array(Image.open("images/test_3.jpg")))
+                    image = image_handling.np_array_to_bytes(picam.take_picture())
+                    self.wifi_send_socket.send_message(b"image:"+image)
+                    print("[TAKEPIC] Receiving Classes")
+                    classes = self.wifi_recv_socket.receive_message()
+
+                while classes:
+                    raw_classes = classes.removeprefix(b"classes:")
+                    raw_classes = raw_classes.split(b",")
+                    match = False
+                    tries = 2
+                    for i in range(0, len(raw_classes)):
+                        if raw_classes[i] == b"41":
+                            continue
+                        elif raw_classes[i] == b"38":
+                            print("[TAKEPIC] Found Class 38")
+                            if self.turn_number == 0:
+                                STM_input = config.path1fast[0]
+                            else:
+                                STM_input = config.path2fast[0]
+                            self.to_STM.put(STM_input)
+                            self.turn_number += 1
+                            match = True
+                            classes = None
+                            break
+                        elif raw_classes[i] == b"39":
+                            print("[TAKEPIC] Found Class 39")
+                            if self.turn_number == 0:
+                                STM_input = config.path1fast[1]
+                            else:
+                                STM_input = config.path2fast[1]
+                            self.to_STM.put(STM_input)
+                            self.turn_number += 1
+                            match = True
+                            classes = None
+                            break
+                    if not match:
+                        print("[TAKEPIC] Retry")
+                        if retry and self.turn_number == 0:
+                            print("[TAKEPIC] Retaking Image")
+                            #image = image_handling.np_array_to_bytes(image_handling.image_to_np_array(Image.open("images/test_3.jpg")))
+                            image = image_handling.np_array_to_bytes(picam.take_picture())
+                            self.wifi_send_socket.send_message(b"image:"+image)
+                            print("[TAKEPIC] Receiving Messages")
+                            classes = self.wifi_recv_socket.receive_message()
+                        elif retry:
+                            print("[TAKEPIC] STM Adjusting")
+                            self.stm_socket.write_to_STM(b"FALSE000")
+                            self.stm_socket.write_to_STM(b"END00000")
+                            STM_msg = self.stm_socket.read_from_STM()
+                            # STM_msg == b"STOP0000"
+                            if STM_msg == b"STOP0000":
+                                print("[TAKEPIC] Retaking Image")
+                                #image = image_handling.np_array_to_bytes(image_handling.image_to_np_array(Image.open("images/test_2.jpg")))
+                                image = image_handling.np_array_to_bytes(picam.take_picture())
+                                self.wifi_send_socket.send_message(b"image:"+image)
+                                print("[TAKEPIC] Receiving Messages")
+                                classes = self.wifi_recv_socket.receive_message()
+                            retry = False
+                        elif not retry:
+                            classes = None
                 self.photo_event.clear()
         return
 

@@ -4,7 +4,7 @@ import config
 
 class model:
     def __init__(self,weights_path) -> None:
-        self.model = torch.hub.load("yolov7", 'custom', weights_path, source = "local", force_reload = False, trust_repo=True)
+        self.model = torch.hub.load(".\yolov7", 'custom', weights_path, source = "local", force_reload = False, trust_repo=True)
     
     def get_results(self,images):
         results = self.model(images)
@@ -29,7 +29,7 @@ class model:
                 confidence = row["confidence"]
                 bbox = [[xmin_bbox, ymin_bbox, xmax_bbox, ymax_bbox],name,confidence,relative_area]
                 result_array.append(bbox)
-                result_array = sorted(result_array, key=lambda x: x[2],reverse=True)
+                result_array = sorted(result_array, key=lambda x: x[2], reverse=True)
                 print(result_array)
         
         # result_array = sorted(result_array, key=lambda x: (x[2]*x[3]), reverse=True)
