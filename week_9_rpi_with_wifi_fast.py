@@ -133,30 +133,35 @@ class rpi_manager:
                 # after first turn, stm needs to move forward using ultrasound sensor till 30cm away from box, then stops and sends take pic
                 print(raw_classes)
                 i = 0
-                while(raw_classes[i] == b"41"):
-                    i+=1
-                    if (len(raw_classes)-1<i):
-                        STM_input = config.retry
-                        self.to_STM.put(STM_input)
-                        self.photo_event.clear()
+                match = False
+                for i in range(0,len(raw_classes)):
+                    if raw_classes[i] == b"41":
                         continue
-                if raw_classes[i] == b"38":
-                    if self.turn_number == 0:
-                        STM_input = config.path1[0]
-                    else:
-                        STM_input = config.path2[0]
-                elif raw_classes[i] == b"39":
-                    if self.turn_number == 0:
-                        STM_input = config.path1[1]
-                    else:
-                        STM_input = config.path2[1]
-                elif raw_classes[i] != b"41":
+                    elif raw_classes[i] == b"38":
+                        if self.turn_number == 0:
+                            STM_input = config.path1fast[0]
+                        else:
+                            STM_input = config.path2fast[0]
+                        match  = True
+                        break
+                    elif raw_classes[i] == b"39":
+                        if self.turn_number == 0:
+                            STM_input = config.path1fast[1]
+                        else:
+                            STM_input = config.path2fast[1]
+                        match = True
+                        break
+
+                if not match:
                     STM_input = config.retry
                     self.to_STM.put(STM_input)
-                    self.photo_event.clear()
-                    continue
+                else:
+                    self.to_STM.put(STM_input)
+                    self.turn_number += 1
+                self.photo_event.clear()
                     
-                
+
+                    
 
 
 
@@ -186,3 +191,6 @@ write_wifi_thread.start()
 # read_android_thread.start()
 write_STM_thread.start()
 take_picture_thread.start()
+
+
+
