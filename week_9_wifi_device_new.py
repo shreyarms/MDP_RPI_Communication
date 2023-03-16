@@ -2,19 +2,9 @@ from model import model
 import image_handling
 from PIL import Image
 
-# # Load Model
-# m = model("weights/best_week9_latest.pt")
-
-
-import pygame
 from wifi_communication import wifi_communication
 import config
-import socket 
 import time
-
-from pygame.locals import *
-from Simulator_Pygame.path_planner import path_planner 
-import Simulator_Pygame.settings as settings
 
 # Set number of pictures to take
 num_of_pics_to_take = 2
@@ -41,8 +31,10 @@ w_send = wifi_communication(config.socket_buffer_size, config.terminating_str)
 w_send.initiate_connection(client, receiving_address) #8081
 
 while num_of_pics_taken < num_of_pics_to_take:
+    print(num_of_pics_taken)
     message = w_recv.receive_message()
     if (message.startswith(b"preimage:")):
+        print("[TAKEPIC] Preimage Event")
         print("[Wifi] Received Image")
         image_data = message.removeprefix(b"preimage:")
         np_image = image_handling.bytes_to_np_array(image_data)
@@ -64,21 +56,23 @@ while num_of_pics_taken < num_of_pics_to_take:
                 image_array.append(current_image)
                 
         classes_dict[num_of_pics_taken] = classes
-        print(classes_dict)
 
     elif(message.startswith(b"FINDOBS:")):
+        print("[TAKEPIC] FINDOBS Event")
         pic_idx = int(message.removeprefix(b"FINDOBS:").decode("UTF-8"))
         if pic_idx in classes_dict:
-            classes = "classes:"+ ','.join(classes)
+            classes = "classes:"+ ','.join(classes_dict[pic_idx])
             print("[Wifi] {}".format(classes))
             classes = bytes(classes, 'utf-8')
             print("[Wifi] Sending Classes")
             w_send.send_message(classes)
-            num_of_pics_taken = pic_idx + 1
+            if "39" in classes_dict[pic_idx] or "38" in classes_dict[pic_idx]:
+                num_of_pics_taken += 1
         else:
             w_send.send_message(b"classes:0")
 
     elif (message.startswith(b"image:")):
+        print("[TAKEPIC] Image Event")
         print("[Wifi] Received Image")
         image_data = message.removeprefix(b"image:")
         np_image = image_handling.bytes_to_np_array(image_data)

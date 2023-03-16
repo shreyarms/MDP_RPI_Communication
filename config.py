@@ -103,4 +103,4 @@ path2fast = [
     b"c:P2L00000,c:END00000"
 ]
 
-retry = b"c:SENSOR60,c:END00000"
+retry = b"c:FALSE000,c:END00000"

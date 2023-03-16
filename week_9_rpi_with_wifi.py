@@ -48,12 +48,12 @@ class rpi_manager:
 
         while True:
             message = self.bluetooth_socket.receive_message()
-            message = b"BANANAS"
+            # message = b"BANANAS"
             if message.startswith(b"BANANAS"):
-                #image = image_handling.np_array_to_bytes(image_handling.image_to_np_array(Image.open("images/test_1.jpg")))
+                #image = image_handling.np_array_to_bytes(image_handling.image_to_np_array(Image.open(image_queue.pop(0))))
                 image = image_handling.np_array_to_bytes(picam.take_picture())
                 self.to_wifi.put(b"preimage:"+image)
-                self.to_STM.put(b"c:SENSOR30,c:END00000,c:TAKEPIC")
+                self.to_STM.put(b"c:START000,c:END00000,c:TAKEPIC")
                 print("[RPi] BANANAS")
                 break
         return
@@ -100,7 +100,7 @@ class rpi_manager:
                                     print("[RPi] Entering Phototaking Event")
                                     self.photo_event.set()
                                 elif len(instruction) == config.STM_buffer_size:
-                                    print(instruction)
+                                    print("[RPI] {}".format(instruction))
                                     self.stm_socket.write_to_STM(instruction)           
                 except Exception as e:
                     print("[RPi] Could Not Send to STM: {}".format(str(e)))
@@ -112,16 +112,17 @@ class rpi_manager:
             self.photo_event.wait()
             print("[TAKEPIC] Inside Event")
             STM_msg = self.stm_socket.read_from_STM()
+            #STM_msg = b"STOP0000"
             if STM_msg == b"STOP0000":
-                retry = True
+                retry = 2
                 print("[TAKEPIC] STM Stopped")
                 if self.turn_number == 0:
                     self.wifi_send_socket.send_message(b"FINDOBS:"+str(self.turn_number).encode())
-                    print("[TAKEPIC] First Turn, Receiving Classes From Image Taken at Start Point")
+                    print("[TAKEPIC] Receiving Classes From Image Taken at Start Point")
                     classes = self.wifi_recv_socket.receive_message()
                 else:
                     print("[TAKEPIC] Taking Picture")
-                    #image = image_handling.np_array_to_bytes(image_handling.image_to_np_array(Image.open("images/test_3.jpg")))
+                    #image = image_handling.np_array_to_bytes(image_handling.image_to_np_array(Image.open(image_queue.pop(0))))
                     image = image_handling.np_array_to_bytes(picam.take_picture())
                     self.wifi_send_socket.send_message(b"image:"+image)
                     print("[TAKEPIC] Receiving Classes")
@@ -131,7 +132,6 @@ class rpi_manager:
                     raw_classes = classes.removeprefix(b"classes:")
                     raw_classes = raw_classes.split(b",")
                     match = False
-                    tries = 2
                     for i in range(0, len(raw_classes)):
                         if raw_classes[i] == b"41":
                             continue
@@ -159,13 +159,14 @@ class rpi_manager:
                             break
                     if not match:
                         print("[TAKEPIC] Retry")
-                        if retry and self.turn_number == 0:
+                        if retry == 2 and self.turn_number == 0:
                             print("[TAKEPIC] Retaking Image")
-                            #image = image_handling.np_array_to_bytes(image_handling.image_to_np_array(Image.open("images/test_3.jpg")))
+                            #image = image_handling.np_array_to_bytes(image_handling.image_to_np_array(Image.open(image_queue.pop(0))))
                             image = image_handling.np_array_to_bytes(picam.take_picture())
                             self.wifi_send_socket.send_message(b"image:"+image)
                             print("[TAKEPIC] Receiving Messages")
                             classes = self.wifi_recv_socket.receive_message()
+                            retry -= 1
                         elif retry:
                             print("[TAKEPIC] STM Adjusting")
                             self.stm_socket.write_to_STM(b"FALSE000")
@@ -174,19 +175,34 @@ class rpi_manager:
                             # STM_msg == b"STOP0000"
                             if STM_msg == b"STOP0000":
                                 print("[TAKEPIC] Retaking Image")
-                                #image = image_handling.np_array_to_bytes(image_handling.image_to_np_array(Image.open("images/test_2.jpg")))
+                                #image = image_handling.np_array_to_bytes(image_handling.image_to_np_array(Image.open(image_queue.pop(0))))
                                 image = image_handling.np_array_to_bytes(picam.take_picture())
                                 self.wifi_send_socket.send_message(b"image:"+image)
                                 print("[TAKEPIC] Receiving Messages")
                                 classes = self.wifi_recv_socket.receive_message()
-                            retry = False
+                            retry = 0
                         elif not retry:
+                            print("[TAKEPIC] Prof Abort :((")
                             classes = None
                 self.photo_event.clear()
         return
 
 
 r = rpi_manager()
+
+# image_queue_1 = ["images/left.jpg", "images/right.jpg"]
+# image_queue_2 = ["images/left.jpg", "images/nothing.jpg","images/right.jpg"]
+# image_queue_3 = ["images/left.jpg", "images/nothing.jpg","images/nothing.jpg"]
+# image_queue_4 = ["images/nothing.jpg", "images/left.jpg","images/right.jpg"]
+# image_queue_5 = ["images/nothing.jpg", "images/left.jpg","images/nothing.jpg","images/right.jpg"]
+# image_queue_6 = ["images/nothing.jpg", "images/left.jpg","images/nothing.jpg","images/nothing.jpg"]
+# image_queue_7 = ["images/nothing.jpg", "images/nothing.jpg","images/left.jpg","images/right.jpg"]
+# image_queue_8 = ["images/nothing.jpg", "images/nothing.jpg","images/left.jpg","images/nothing.jpg","images/right.jpg"]
+# image_queue_9 = ["images/nothing.jpg", "images/nothing.jpg","images/left.jpg","images/nothing.jpg","images/nothing.jpg"]
+# image_queue_10 = ["images/nothing.jpg", "images/nothing.jpg","images/nothing.jpg"]
+
+# image_queue = image_queue_8
+
 r.prestart()
 read_wifi_thread = threading.Thread(target=r.read_wifi)
 # android_communication_thread = threading.Thread(target = android_communication)
