@@ -1,6 +1,6 @@
-from Simulator_Pygame.Entities.grid import *
-from Simulator_Pygame.Entities.car import *
-from Simulator_Pygame.Entities.obstacle import *
+from Algorithm.Entities.grid import *
+from Algorithm.Entities.car import *
+from Algorithm.Entities.obstacle import *
 import algorithm
 import a_star
 import settings
