@@ -84,6 +84,7 @@ class bluetooth_communication:
         return
     
     # Reading from Android
+    # Receive Frames of Data  
     def receive_frame(self):
         frame_txt = b''
         try:
@@ -93,6 +94,7 @@ class bluetooth_communication:
             pass
         return frame_txt
 
+    # Stitch Frames of Data to Form Whole Block Of Data 
     def receive_message(self):
         msg = b''
         count = 1

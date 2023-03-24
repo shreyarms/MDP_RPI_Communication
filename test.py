@@ -4,9 +4,9 @@ from PIL import Image
 import numpy as np
 import time
 
-m1 = model("weights/best_week9_latest.pt")
+# File to test and compare models with images 
 
-
+m1 = model("weights/week_9_best.pt")
 m2 = model("weights/week_8_best.pt")
 
 image_1 = Image.open("images/1678864658.352452.jpg")
@@ -27,12 +27,11 @@ images = [image_1,image_2,image_3,image_4,image_5, image_6, image_7, image_8, im
 
 model_1 = []
 model_2 = []
+
 for image in images:
     np_image = image_handling.image_to_np_array(image)
     result_array_m1 = m1.get_results(np_image)
     result_array_m2 = m2.get_results(np_image)
-    if len(result_array_m1) > 0 and len(result_array_m2) > 0:
-        print("\nnew model:",result_array_m1, "\nold model:",result_array_m2)
     im1 = image_handling.draw_bbox(image_handling.np_array_to_image(np_image), result_array_m1)
     im2 = image_handling.draw_bbox(image_handling.np_array_to_image(np_image), result_array_m2)
     model_1.append(im1)
@@ -50,9 +49,3 @@ resultant_img.save("images/tiled_image.jpg")
 # im2.save("images/old_images/result_new_model_5.jpg")
 
 
-
-# image_array = [["image",[image_1]],["image",[image_2]],["image",[image_3]],["image",[image_4]],["image",[image_5]]]
-
-# a = image_handling.image_tiling(image_array)
-
-# a.show()

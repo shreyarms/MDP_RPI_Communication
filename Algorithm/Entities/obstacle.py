@@ -24,7 +24,7 @@ class Obstacle:
             #     direction = -90
             # else: #Up
             #     direction = 90
-            image = pygame.image.load(os.path.join('Simulator_Pygame','Entities','Assets','Obstacle.png')).convert_alpha()
+            image = pygame.image.load(os.path.join('Algorithm','Entities','Assets','Obstacle.png')).convert_alpha()
             image = pygame.transform.scale(image, (settings.grid_size,settings.grid_size))
             rotated_obs = pygame.transform.rotate(image, obs[2])
             rect = rotated_obs.get_rect()

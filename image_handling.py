@@ -4,6 +4,8 @@ import config
 import matplotlib.pyplot as plt
 import math
 
+# Functions to help with the conversion of image data, bbox drawing, and image tiling to show all detected images in a mosaic after a run 
+
 def bytes_to_np_array(msg):
     np_msg = np.frombuffer(msg, dtype=np.uint8)
     np_msg = np_msg.reshape(config.image_height,config.image_width,3)

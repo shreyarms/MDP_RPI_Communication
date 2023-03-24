@@ -2,6 +2,10 @@ import torch
 import time
 import config 
 
+# Class for the model
+# Loads the weights when instantiated
+# has a get_results method that returns an array of detected classes that are sorted by confidence and/or area of bbox 
+
 class model:
     def __init__(self,weights_path) -> None:
         self.model = torch.hub.load(".\yolov7", 'custom', weights_path, source = "local", force_reload = False, trust_repo=True)
@@ -29,8 +33,9 @@ class model:
                 confidence = row["confidence"]
                 bbox = [[xmin_bbox, ymin_bbox, xmax_bbox, ymax_bbox],name,confidence,relative_area]
                 result_array.append(bbox)
+                # for week 9
                 result_array = sorted(result_array, key=lambda x: x[2], reverse=True)
+                # for week 8
+                # result_array = sorted(result_array, key=lambda x: (x[2]*x[3]), reverse=True)
                 print(result_array)
-        
-        # result_array = sorted(result_array, key=lambda x: (x[2]*x[3]), reverse=True)
         return result_array

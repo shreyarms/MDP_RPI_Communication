@@ -7,8 +7,8 @@ import socket
 import time
 from PIL import Image
 from pygame.locals import *
-from Simulator_Pygame.path_planner import path_planner 
-import Simulator_Pygame.settings as settings
+from Algorithm.path_planner import path_planner 
+import Algorithm.settings as settings
 
 # Set number of pictures to take
 num_of_pics_to_take = 8
@@ -26,6 +26,7 @@ FPS = 60
 FramePerSec = pygame.time.Clock()
 DISPLAYSURF = pygame.display.set_mode((settings.Window_Size), RESIZABLE)
 pygame.display.set_caption("MDP Simulator")
+
 #primary_surface is for resizeable purposes
 primary_surface = DISPLAYSURF.copy()
 primary_surface.fill([0,0,0])
@@ -93,22 +94,28 @@ algo_output_string = bytes(''.join(algo_array[num_of_pics_taken]), "UTF-8")
 
 w_send.send_message(algo_output_string)
 
-while (num_of_pics_taken < num_of_pics_to_take):
+while num_of_pics_taken < num_of_pics_to_take:
     message = w_recv.receive_message()
-    if (message.startswith(b"image:")):
+    if message.startswith(b"image:"):
         print("[Wifi] Received Image")
         image_data = message.removeprefix(b"image:")
         image_data_split = image_data.split(b"SEPERATE")
+        # update num of pics taken witht data from the message from the RPi  
         num_of_pics_taken, byte_image = int(image_data_split[0]),b''.join(image_data_split[1:])
+        # convert image to np_image
         np_image = image_handling.bytes_to_np_array(byte_image)
+        
+        #save image for training 
         image = image_handling.np_array_to_image(np_image)
         image.save("images/"+str(time.time()) +".jpg")
+        
+        # detect classes in image  andput detected classes in an array 
         results_array = m.get_results(np_image)
-
         classes = []
         for result in results_array:
             classes.append(result[1])
 
+        # if classes detcted, draw bboxes 
         if len(classes) == 0:
             classes.append(str(0))
         else:
@@ -116,19 +123,20 @@ while (num_of_pics_taken < num_of_pics_to_take):
             current_image = ["Image "+str(num_of_pics_taken+1),[image]]
             image_array.append(current_image)
         
+        # send classes 
         classes = "classes:"+ ','.join(classes)
         print("[Wifi] {}".format(classes))
         classes = bytes(classes, 'utf-8')
         print("[Wifi] Sending Classes")
         w_send.send_message(classes)
 
-        # num_of_pics_taken += 1
-
+        # receive next message, if next message requests for the next point to point algorithm, then send path
+        # if not, continue in the while loop 
         message = w_recv.receive_message()
         if message.startswith(b"nextalgo"):
             num_of_pics_taken += 1
             print("[Wifi] Sending Next Path")
-            # time.sleep(1)
+            # if there are no other paths from the algorithm, break out of the while loop 
             if num_of_pics_taken < len(algo_array):
                 algo_output_string = bytes(''.join(algo_array[num_of_pics_taken]), "UTF-8")
                 #custom_input = ["c:FL180000","c:END00000","c:TAKEPIC1,2"]"
@@ -137,6 +145,7 @@ while (num_of_pics_taken < num_of_pics_to_take):
             else:
                 break
 
+# Once all images have been taken, the images can be tiled and displayed
 tiled_image = image_handling.image_tiling(image_array)
 tiled_image.show()
 tiled_image.save("images/tiled_images.jpg")

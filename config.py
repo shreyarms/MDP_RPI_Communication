@@ -21,8 +21,6 @@ baud_rate = 115200
 STM_buffer_size = 8
 # communication
 terminating_str = b"CLOSE"
-sep_str = b"SEP"
-loop_path = b"BS020000,FL090000,FS008000,FR180000,BS030000,END00000"
 # classes
 names = {
     "11": "1",
@@ -57,40 +55,6 @@ names = {
     "40": "Circle",
 }
 # paths for week 9 [turn number, turn direction]
-# 0,0 : 1st right
-# 0,1 : 1st left
-# 1,0 : 2nd right
-# 1,1 : 2nd left
-path = [
-    ["c:FR090000,c:END00000"],
-    ["c:FL090000,c:END000000"],
-    ["c:FR090000,c:END00000"],
-    ["c:FL090000,c:END00000"],
-]
-
-
-
-# first turn : [right, left]
-path1 = [
-    b"c:FR031397,c:FS033948,c:FL031397,c:TPR00000,c:END00000,c:TAKEPIC",
-    b"c:FL031397,c:FS033948,c:FR031397,c:TPL00000,c:END00000,c:TAKEPIC",
-]
-
-# first turn left, second turn : [right, left]
-path2left = [
-    b"c:SENSOR50,c:FR057645,c:FS061298,c:FL148715,c:FS047242,c:FL091070,c:MOVEMEMO,c:FL065307,c:FS023022,c:FR065307,c:SENSOR10,c:END00000",
-    b"c:SENSOR50,c:FL020794,c:FS061258,c:FR109671,c:FS050101,c:FR088877,c:MOVEMEMO,c:FR065307,c:FS023022,c:FL065307,c:SENSOR10,c:END00000",
-]
-
-# first turn right, second turn : [right, left]
-path2right = [
-    b"c:SENSOR50,c:FR020794,c:FS061258,c:FL111864,c:FS04724,c:FL091070,c:MOVEMEMO,c:FL065307,c:FS023022,c:FR065307,c:SENSOR10,c:END00000",
-    b"c:SENSOR50,c:FL057645,c:FS061298,c:FR146522,c:FS050101,c:FR088877,c:MOVEMEMO,c:FR065307,c:FS023022,c:FL065307,c:SENSOR10,c:END00000",
-]
-
-
-# ------------------------------------------------------------------------------------------------------
-
 # first turn : [right, left]
 path1fast = [
     b"c:P1R00000,c:END00000,c:TAKEPIC",
